@@ -44,6 +44,8 @@ set_target_properties(usb1.0-lib
         PROPERTIES IMPORTED_LOCATION
         libs/libusb/$(ANDROID_ABI)/libusb1.0.so)
 
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../../..//libs/libusb/include/ )
+
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.

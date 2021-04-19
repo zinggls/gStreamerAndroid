@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string>
+#include <libusbi.h>
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_gstreamer_MainActivity_stringFromJNI(
