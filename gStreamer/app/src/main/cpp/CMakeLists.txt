@@ -36,6 +36,14 @@ find_library( # Sets the name of the path variable.
               # you want CMake to locate.
               log )
 
+add_library(usb1.0-lib
+            SHARED
+            IMPORTED )
+
+set_target_properties(usb1.0-lib
+        PROPERTIES IMPORTED_LOCATION
+        libs/libusb/$(ANDROID_ABI)/libusb1.0.so)
+
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
@@ -45,4 +53,5 @@ target_link_libraries( # Specifies the target library.
 
                        # Links the target library to the log library
                        # included in the NDK.
-                       ${log-lib} )
+                       ${log-lib}
+                       ${usb1.0-lib})
