@@ -167,3 +167,71 @@ Java_com_example_gstreamer_MainActivity_stringFromJNI(
     std::string hello = "Hello from C++";
     return env->NewStringUTF(hello.c_str());
 }
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_example_gstreamer_MainActivity_open
+        (JNIEnv *, jobject, jint fileDescriptor)
+{
+    __android_log_print(ANDROID_LOG_INFO,TAG,"open starts");
+    int r;
+
+    r = libusb_set_option(NULL, LIBUSB_OPTION_WEAK_AUTHORITY, NULL);
+    if(r<0) {
+        __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_set_option error=%d",r);
+        return r;
+    }
+
+    r = libusb_init(NULL);
+    if(r<0) {
+        __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_init error=%d",r);
+        return r;
+    }
+
+    r = libusb_wrap_sys_device(NULL,(intptr_t)fileDescriptor,&devh);
+    if(r<0) {
+        __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_wrap_sys_device error=%d",r);
+        return r;
+    }
+
+    r = deviceInfo(devh);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"deviceInfo = %d",r);
+    if(r<0) return r;
+
+    r = libusb_kernel_driver_active(devh,0);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_kernel_driver_active = %d",r);
+    if(r<0) return r;
+
+    return 0;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_gstreamer_MainActivity_close
+        (JNIEnv *, jobject)
+{
+    libusb_exit(NULL);
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_example_gstreamer_MainActivity_reader
+        (JNIEnv *, jobject)
+{
+    __android_log_print(ANDROID_LOG_INFO,TAG,"reader starts");
+    pthread_t tid;
+    return pthread_create(&tid,NULL,runThread,&epi);
+}
+
+extern "C" JNIEXPORT jlong JNICALL
+Java_com_example_gstreamer_MainActivity_count
+        (JNIEnv *, jobject)
+{
+    return count;
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_example_gstreamer_MainActivity_writer
+        (JNIEnv *, jobject)
+{
+    __android_log_print(ANDROID_LOG_INFO,TAG,"writer starts");
+    pthread_t tid;
+    return pthread_create(&tid,NULL,runThread,&epo);
+}
