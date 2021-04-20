@@ -156,7 +156,7 @@ static void* runThread(void *arg)
         }
     }
 
-    cleanup:
+cleanup:
     return NULL;
 }
 
