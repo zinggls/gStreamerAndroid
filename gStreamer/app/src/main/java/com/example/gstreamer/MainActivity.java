@@ -288,4 +288,8 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+
+    public static void callback(){
+        Log.i(TAG,"callback");
+    }
 }

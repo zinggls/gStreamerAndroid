@@ -20,6 +20,8 @@ typedef enum{
 } Mode;
 static Mode mode = NOT_DEF;
 const char *className = "com/example/gstreamer/MainActivity";
+static jobject jObject;
+static jmethodID funccb;
 
 static int deviceInfo(libusb_device_handle *h)
 {
@@ -215,9 +217,28 @@ Java_com_example_gstreamer_MainActivity_close
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_gstreamer_MainActivity_reader
-        (JNIEnv *, jobject)
+        (JNIEnv *env, jobject)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"reader starts");
+
+    __android_log_print(ANDROID_LOG_INFO,TAG,"FindClass...%s",className);
+    jclass cls = env->FindClass(className);
+    if(cls == NULL){
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"Can't find the class, %s",className);
+    } else {
+        __android_log_print(ANDROID_LOG_INFO,TAG,"Class %s found",className);
+    }
+
+    jObject = (jclass)env->NewGlobalRef(cls);
+    funccb = env->GetStaticMethodID(cls,"callback","()V");
+    if ( funccb == 0 ) {
+        __android_log_print( ANDROID_LOG_INFO, TAG, "Can't find the function" ) ;
+        env->DeleteGlobalRef( jObject ) ;
+    } else {
+        __android_log_print( ANDROID_LOG_INFO, TAG, "Method connection ok") ;
+        env->CallStaticVoidMethod( cls, funccb );
+    }
+
     pthread_t tid;
     return pthread_create(&tid,NULL,runThread,&epi);
 }
