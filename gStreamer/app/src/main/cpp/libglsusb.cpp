@@ -20,8 +20,9 @@ typedef enum{
 } Mode;
 static Mode mode = NOT_DEF;
 const char *className = "com/example/gstreamer/MainActivity";
-static jobject jObject;
-static jmethodID funccb;
+static jclass jObject = NULL;
+static jmethodID funccb = NULL;
+static JavaVM *gJavaVM = NULL;
 
 static int deviceInfo(libusb_device_handle *h)
 {
@@ -92,6 +93,33 @@ static int getFileInfo(unsigned char *buffer, int bufferSize, int syncSize, FILE
     return nOffset;
 }
 
+static void onFileClose(FILE *pFile)
+{
+    int status;
+    JNIEnv *env;
+    bool isAttached = false;
+
+    fclose(pFile);
+
+    assert(gJavaVM);
+    status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < JNI_OK){
+        assert(status==JNI_EDETACHED);
+        __android_log_print(ANDROID_LOG_INFO,TAG,"onFileClose: failed to get JNI environment, assuming native thread, %d",status);
+        status = gJavaVM->AttachCurrentThread(&env, NULL);
+        if(status < JNI_OK) {
+            __android_log_print(ANDROID_LOG_ERROR,TAG,"onFileClose: failed to attach current thread, %d",status);
+            return;
+        }
+        __android_log_print(ANDROID_LOG_INFO,TAG,"onFileClose: Attached to current thread, %d",status);
+        isAttached = true;
+    }
+
+    env->CallStaticVoidMethod(jObject,funccb);
+
+    if(isAttached) gJavaVM->DetachCurrentThread();
+}
+
 static void* runThread(void *arg)
 {
     int r;
@@ -140,14 +168,14 @@ static void* runThread(void *arg)
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
                         assert(szWrite==transferred);
                         bytes += transferred;
-                        if(bytes == info.size_) fclose(pFile);
+                        if(bytes == info.size_) onFileClose(pFile);
                     }else if(bytes+transferred > info.size_) {
                         size_t szWrite = fwrite(buf,1,info.size_-bytes,pFile);
                         assert(szWrite==(info.size_-bytes));
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
                         bytes += (info.size_-bytes);
                         assert(bytes==info.size_);
-                        fclose(pFile);
+                        onFileClose(pFile);
                     }
                     __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",info.name_,bytes,info.size_);
                 }
@@ -272,6 +300,7 @@ JNI_OnLoad(JavaVM* vm, void* reserved)
         goto error;
     }
     r = JNI_VERSION_1_6;
+    gJavaVM = vm;
 
     __android_log_print(ANDROID_LOG_INFO,TAG,"FindClass...%s",className);
     cls = env->FindClass(className);
