@@ -291,29 +291,22 @@ extern "C" jint
 JNI_OnLoad(JavaVM* vm, void* reserved)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"JNI_OnLoad start");
-    jint r = -1;
-    jclass cls;
-
     JNIEnv* env = NULL;
     if(vm->GetEnv((void**)&env,JNI_VERSION_1_6)!=JNI_OK){
         __android_log_print(ANDROID_LOG_ERROR,TAG,"JNI_OnLoad GetEnv Error");
-        goto error;
+        return JNI_ERR;
     }
-    r = JNI_VERSION_1_6;
     gJavaVM = vm;
 
     __android_log_print(ANDROID_LOG_INFO,TAG,"FindClass...%s",className);
-    cls = env->FindClass(className);
+    jclass cls = env->FindClass(className);
     if(cls == NULL) {
         __android_log_print(ANDROID_LOG_ERROR,TAG,"Can't find the class, %s",className);
-        goto error;
+        return JNI_ERR;
     }
     __android_log_print(ANDROID_LOG_INFO,TAG,"Class %s found",className);
-
     __android_log_print(ANDROID_LOG_INFO,TAG,"JNI_OnLoad end, JNIEnv=0x%x",env);
-error:
-    __android_log_print(ANDROID_LOG_INFO,TAG,"JNI_OnLoad return=0x%x",r);
-    return r;
+    return JNI_VERSION_1_6;
 }
 
 extern "C" void
