@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnCon;
     private Button btnSnd;
     private Button btnRcv;
-    private static final String TAG = "Tag";
+    private static final String TAG = "glsusb";
     private static final String ACTION_USB_PERMISSION = "com.example.usbHandle.USB_PERMISSION";
     private UsbManager usbManager;
     private int fileDescriptor;
