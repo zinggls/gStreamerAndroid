@@ -16,11 +16,11 @@ typedef enum{
 
 static libusb_device_handle *gDevh = NULL;
 static unsigned int gCount;
-unsigned char gEpIN = 0x82;   //Input EP
-unsigned char gEpOut = 0x02;   //Output EP
-unsigned char gSync[4] = {0x07, 0x3a, 0xb6, 0x99 };
+static unsigned char gEpIN = 0x82;   //Input EP
+static unsigned char gEpOut = 0x02;   //Output EP
+static unsigned char gSync[4] = {0x07, 0x3a, 0xb6, 0x99 };
 static Mode gMode = NOT_DEF;
-const char *gClassName = "com/example/gstreamer/MainActivity";
+static const char *gClassName = "com/example/gstreamer/MainActivity";
 static jclass gClass = NULL;
 static jmethodID gStaticCB = NULL;
 static JavaVM *gJavaVM = NULL;
