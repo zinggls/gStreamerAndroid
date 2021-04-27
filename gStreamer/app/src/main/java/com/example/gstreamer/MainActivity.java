@@ -292,4 +292,9 @@ public class MainActivity extends AppCompatActivity {
     public static void callback(){
         Log.i(TAG,"callback");
     }
+
+    public void onFileReceived()
+    {
+        LI(TAG,"FileReceived");
+    }
 }

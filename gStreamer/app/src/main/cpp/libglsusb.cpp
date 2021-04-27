@@ -24,6 +24,7 @@ static const char *gClassName = "com/example/gstreamer/MainActivity";
 static jclass gClass = NULL;
 static jmethodID gStaticCB = NULL;
 static JavaVM *gJavaVM = NULL;
+static jmethodID gOnFileReceivedCB = NULL;
 
 static int deviceInfo(libusb_device_handle *h)
 {
@@ -266,6 +267,13 @@ Java_com_example_gstreamer_MainActivity_reader
     } else {
         __android_log_print( ANDROID_LOG_INFO, TAG, "Method connection ok") ;
         env->CallStaticVoidMethod(cls, gStaticCB );
+    }
+
+    gOnFileReceivedCB = env->GetMethodID(cls,"onFileReceived","()V");
+    if(gOnFileReceivedCB==0) {
+        __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileReceived" ) ;
+    }else{
+        __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileReceived" ) ;
     }
 
     pthread_t tid;
