@@ -296,5 +296,11 @@ public class MainActivity extends AppCompatActivity {
     public void onFileReceived()
     {
         Log.i(TAG,"onFileReceived");
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                LI(TAG,"onFileReceived");
+            }
+        });
     }
 }
