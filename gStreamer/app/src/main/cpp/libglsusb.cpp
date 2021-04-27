@@ -8,20 +8,20 @@
 #define TAG "glsusb"
 #define BUF_SIZE    (8192*8*4)
 
-static libusb_device_handle *devh = NULL;
-static unsigned int count;
-unsigned char epi = 0x82;   //Input EP
-unsigned char epo = 0x02;   //Output EP
-unsigned char sync[4] = { 0x07,0x3a,0xb6,0x99 };
+static libusb_device_handle *gDevh = NULL;
+static unsigned int gCount;
+unsigned char gEpIN = 0x82;   //Input EP
+unsigned char gEpOut = 0x02;   //Output EP
+unsigned char gSync[4] = {0x07, 0x3a, 0xb6, 0x99 };
 typedef enum{
     NOT_DEF=-1,
     STREAM_MODE,
     FILE_MODE
 } Mode;
-static Mode mode = NOT_DEF;
-const char *className = "com/example/gstreamer/MainActivity";
-static jclass jObject = NULL;
-static jmethodID funccb = NULL;
+static Mode gMode = NOT_DEF;
+const char *gClassName = "com/example/gstreamer/MainActivity";
+static jclass gClass = NULL;
+static jmethodID gStaticCB = NULL;
 static JavaVM *gJavaVM = NULL;
 
 static int deviceInfo(libusb_device_handle *h)
@@ -35,17 +35,17 @@ static int deviceInfo(libusb_device_handle *h)
     if(r<0) return r;
 
     if(desc.iManufacturer) {
-        if(libusb_get_string_descriptor_ascii(devh,desc.iManufacturer,string,sizeof(string))>0)
+        if(libusb_get_string_descriptor_ascii(gDevh, desc.iManufacturer, string, sizeof(string)) > 0)
             __android_log_print(ANDROID_LOG_INFO,TAG,"Manufacturer: %s",(char*)string);
     }
 
     if(desc.iProduct) {
-        if(libusb_get_string_descriptor_ascii(devh,desc.iProduct,string,sizeof(string))>0)
+        if(libusb_get_string_descriptor_ascii(gDevh, desc.iProduct, string, sizeof(string)) > 0)
             __android_log_print(ANDROID_LOG_INFO,TAG,"Product: %s",(char*)string);
     }
 
     if(desc.iSerialNumber) {
-        if(libusb_get_string_descriptor_ascii(devh,desc.iSerialNumber,string,sizeof(string))>0)
+        if(libusb_get_string_descriptor_ascii(gDevh, desc.iSerialNumber, string, sizeof(string)) > 0)
             __android_log_print(ANDROID_LOG_INFO,TAG,"Serial Number: %s",(char*)string);
     }
     return 0;
@@ -59,8 +59,8 @@ static bool isInputEP(unsigned char ep)
 
 static bool syncFound(unsigned char *buf,int length)
 {
-    if(length<sizeof(sync)) return false;
-    if(memcmp(buf,sync,sizeof(sync))==0) return true;
+    if(length<sizeof(gSync)) return false;
+    if(memcmp(buf, gSync, sizeof(gSync)) == 0) return true;
     return false;
 }
 
@@ -115,7 +115,7 @@ static void onFileClose(FILE *pFile)
         isAttached = true;
     }
 
-    env->CallStaticVoidMethod(jObject,funccb);
+    env->CallStaticVoidMethod(gClass, gStaticCB);
 
     if(isAttached) gJavaVM->DetachCurrentThread();
 }
@@ -128,24 +128,24 @@ static void* runThread(void *arg)
 
     unsigned char *buf = new unsigned char[BUF_SIZE];
 
-    libusb_clear_halt(devh,ep);
+    libusb_clear_halt(gDevh, ep);
     __android_log_print(ANDROID_LOG_INFO,TAG,"runThread starts(ep:0x%x)...",ep);
     memset(buf,'\0',BUF_SIZE);
-    count = 0;
+    gCount = 0;
 
     size_t bytes;
     FILEINFO info;
     FILE *pFile = 0;
     while(1){
-        r = libusb_bulk_transfer(devh,ep,buf,sizeof(unsigned char)*BUF_SIZE,&transferred,0);
+        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
         if(r==0){
-            __android_log_print(ANDROID_LOG_INFO,TAG,"%u %dbytes",++count,transferred);
-            if(isInputEP(ep)&&syncFound(buf,sizeof(sync))) {
+            __android_log_print(ANDROID_LOG_INFO, TAG, "%u %dbytes", ++gCount, transferred);
+            if(isInputEP(ep)&&syncFound(buf,sizeof(gSync))) {
                 __android_log_print(ANDROID_LOG_INFO,TAG,"InputEP(0x%x) Sync found",ep);
 
                 bytes = 0;
                 memset(&info,0,sizeof(info));
-                getFileInfo(buf, transferred, sizeof(sync),info);
+                getFileInfo(buf, transferred, sizeof(gSync), info);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"index:%d",info.index_);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"files:%d",info.files_);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"nameSize:%d",info.nameSize_);
@@ -219,17 +219,17 @@ Java_com_example_gstreamer_MainActivity_open
         return r;
     }
 
-    r = libusb_wrap_sys_device(NULL,(intptr_t)fileDescriptor,&devh);
+    r = libusb_wrap_sys_device(NULL,(intptr_t)fileDescriptor,&gDevh);
     if(r<0) {
         __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_wrap_sys_device error=%d",r);
         return r;
     }
 
-    r = deviceInfo(devh);
+    r = deviceInfo(gDevh);
     __android_log_print(ANDROID_LOG_INFO,TAG,"deviceInfo = %d",r);
     if(r<0) return r;
 
-    r = libusb_kernel_driver_active(devh,0);
+    r = libusb_kernel_driver_active(gDevh, 0);
     __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_kernel_driver_active = %d",r);
     if(r<0) return r;
 
@@ -249,33 +249,33 @@ Java_com_example_gstreamer_MainActivity_reader
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"reader starts");
 
-    __android_log_print(ANDROID_LOG_INFO,TAG,"FindClass...%s",className);
-    jclass cls = env->FindClass(className);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "FindClass...%s", gClassName);
+    jclass cls = env->FindClass(gClassName);
     if(cls == NULL){
-        __android_log_print(ANDROID_LOG_ERROR,TAG,"Can't find the class, %s",className);
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "Can't find the class, %s", gClassName);
     } else {
-        __android_log_print(ANDROID_LOG_INFO,TAG,"Class %s found",className);
+        __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
     }
 
-    jObject = (jclass)env->NewGlobalRef(cls);
-    funccb = env->GetStaticMethodID(cls,"callback","()V");
-    if ( funccb == 0 ) {
+    gClass = (jclass)env->NewGlobalRef(cls);
+    gStaticCB = env->GetStaticMethodID(cls, "callback", "()V");
+    if (gStaticCB == 0 ) {
         __android_log_print( ANDROID_LOG_INFO, TAG, "Can't find the function" ) ;
-        env->DeleteGlobalRef( jObject ) ;
+        env->DeleteGlobalRef(gClass ) ;
     } else {
         __android_log_print( ANDROID_LOG_INFO, TAG, "Method connection ok") ;
-        env->CallStaticVoidMethod( cls, funccb );
+        env->CallStaticVoidMethod(cls, gStaticCB );
     }
 
     pthread_t tid;
-    return pthread_create(&tid,NULL,runThread,&epi);
+    return pthread_create(&tid,NULL,runThread,&gEpIN);
 }
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_example_gstreamer_MainActivity_count
         (JNIEnv *, jobject)
 {
-    return count;
+    return gCount;
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -284,7 +284,7 @@ Java_com_example_gstreamer_MainActivity_writer
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"writer starts");
     pthread_t tid;
-    return pthread_create(&tid,NULL,runThread,&epo);
+    return pthread_create(&tid,NULL,runThread,&gEpOut);
 }
 
 extern "C" jint
@@ -298,13 +298,13 @@ JNI_OnLoad(JavaVM* vm, void* reserved)
     }
     gJavaVM = vm;
 
-    __android_log_print(ANDROID_LOG_INFO,TAG,"FindClass...%s",className);
-    jclass cls = env->FindClass(className);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "FindClass...%s", gClassName);
+    jclass cls = env->FindClass(gClassName);
     if(cls == NULL) {
-        __android_log_print(ANDROID_LOG_ERROR,TAG,"Can't find the class, %s",className);
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "Can't find the class, %s", gClassName);
         return JNI_ERR;
     }
-    __android_log_print(ANDROID_LOG_INFO,TAG,"Class %s found",className);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
     __android_log_print(ANDROID_LOG_INFO,TAG,"JNI_OnLoad end, JNIEnv=0x%x",env);
     return JNI_VERSION_1_6;
 }
