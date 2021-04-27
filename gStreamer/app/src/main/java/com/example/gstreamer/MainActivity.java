@@ -293,13 +293,13 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG,"callback");
     }
 
-    public void onFileReceived()
+    public void onFileReceived(String s)
     {
         Log.i(TAG,"onFileReceived");
         handler.post(new Runnable() {
             @Override
             public void run() {
-                LI(TAG,"onFileReceived");
+                LI(TAG,s+" received");
             }
         });
     }

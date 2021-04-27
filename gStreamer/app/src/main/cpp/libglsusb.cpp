@@ -96,7 +96,7 @@ static int getFileInfo(unsigned char *buffer, int bufferSize, int syncSize, FILE
     return nOffset;
 }
 
-static void onFileClose(FILE *pFile)
+static void onFileClose(FILE *pFile,const char *pFileName)
 {
     int status;
     JNIEnv *env;
@@ -118,8 +118,9 @@ static void onFileClose(FILE *pFile)
         isAttached = true;
     }
 
+    jstring js = env->NewStringUTF(pFileName);
     env->CallStaticVoidMethod(gClass, gStaticCB);
-    env->CallVoidMethod(gObject,gOnFileReceivedCB);
+    env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
 
     if(isAttached) gJavaVM->DetachCurrentThread();
 }
@@ -172,14 +173,14 @@ static void* runThread(void *arg)
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
                         assert(szWrite==transferred);
                         bytes += transferred;
-                        if(bytes == info.size_) onFileClose(pFile);
+                        if(bytes == info.size_) onFileClose(pFile,info.name_);
                     }else if(bytes+transferred > info.size_) {
                         size_t szWrite = fwrite(buf,1,info.size_-bytes,pFile);
                         assert(szWrite==(info.size_-bytes));
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
                         bytes += (info.size_-bytes);
                         assert(bytes==info.size_);
-                        onFileClose(pFile);
+                        onFileClose(pFile,info.name_);
                     }
                     __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",info.name_,bytes,info.size_);
                 }
@@ -271,7 +272,7 @@ Java_com_example_gstreamer_MainActivity_reader
         env->CallStaticVoidMethod(cls, gStaticCB );
     }
 
-    gOnFileReceivedCB = env->GetMethodID(cls,"onFileReceived","()V");
+    gOnFileReceivedCB = env->GetMethodID(cls,"onFileReceived","(Ljava/lang/String;)V");
     if(gOnFileReceivedCB==0) {
         __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileReceived" ) ;
     }else{
