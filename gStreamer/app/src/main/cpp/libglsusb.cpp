@@ -25,6 +25,7 @@ static jclass gClass = NULL;
 static jmethodID gStaticCB = NULL;
 static JavaVM *gJavaVM = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
+static jobject gObject = NULL;
 
 static int deviceInfo(libusb_device_handle *h)
 {
@@ -118,6 +119,7 @@ static void onFileClose(FILE *pFile)
     }
 
     env->CallStaticVoidMethod(gClass, gStaticCB);
+    env->CallVoidMethod(gObject,gOnFileReceivedCB);
 
     if(isAttached) gJavaVM->DetachCurrentThread();
 }
@@ -247,7 +249,7 @@ Java_com_example_gstreamer_MainActivity_close
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_gstreamer_MainActivity_reader
-        (JNIEnv *env, jobject)
+        (JNIEnv *env, jobject thiz)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"reader starts");
 
@@ -273,6 +275,7 @@ Java_com_example_gstreamer_MainActivity_reader
     if(gOnFileReceivedCB==0) {
         __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileReceived" ) ;
     }else{
+        gObject = env->NewGlobalRef(thiz);  //TODO  DeleteGlobalRef call
         __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileReceived" ) ;
     }
 
