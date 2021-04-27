@@ -8,16 +8,17 @@
 #define TAG "glsusb"
 #define BUF_SIZE    (8192*8*4)
 
-static libusb_device_handle *gDevh = NULL;
-static unsigned int gCount;
-unsigned char gEpIN = 0x82;   //Input EP
-unsigned char gEpOut = 0x02;   //Output EP
-unsigned char gSync[4] = {0x07, 0x3a, 0xb6, 0x99 };
 typedef enum{
     NOT_DEF=-1,
     STREAM_MODE,
     FILE_MODE
 } Mode;
+
+static libusb_device_handle *gDevh = NULL;
+static unsigned int gCount;
+unsigned char gEpIN = 0x82;   //Input EP
+unsigned char gEpOut = 0x02;   //Output EP
+unsigned char gSync[4] = {0x07, 0x3a, 0xb6, 0x99 };
 static Mode gMode = NOT_DEF;
 const char *gClassName = "com/example/gstreamer/MainActivity";
 static jclass gClass = NULL;
