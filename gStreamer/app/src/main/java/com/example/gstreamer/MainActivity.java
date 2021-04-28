@@ -221,9 +221,10 @@ public class MainActivity extends AppCompatActivity {
                         LI(TAG, "File mode selected");
                         LE(TAG, "NOT IMPLEMENTED YET");
 
-                        Intent intent = new Intent().setType("*/*").setAction(Intent.ACTION_OPEN_DOCUMENT);
-                        intent.addCategory(Intent.CATEGORY_OPENABLE);
-                        startActivityForResult(Intent.createChooser(intent, "Select a file"), 0);
+                        Intent chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
+                        chooseFile.setType("*/*");
+                        chooseFile.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
+                        startActivityForResult(Intent.createChooser(chooseFile,"Choose a file"),0);
                         dialog.dismiss();
                     }
                 });
@@ -263,13 +264,17 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 0 && resultCode == RESULT_OK) {
             LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
-            Uri selectedfile = data.getData(); //The uri with the location of the file
 
-            // 경로 정보: selectedfile.getPath()
-            // 전체 URI 정보: selectedfile.toString()
-            LI(TAG,"Path: " + selectedfile.getPath());
-            LI(TAG,"URI: " + selectedfile.toString());
-            LI(TAG,"File Name: " + getFileNameFromUri(selectedfile));
+            ClipData clip = data.getClipData();
+            LI(TAG, "ItemCount="+clip.getItemCount());
+            for(int i=0;i<clip.getItemCount();i++) {
+                ClipData.Item item = clip.getItemAt(i);
+                Uri uri = item.getUri();
+
+                LI(TAG,"Path: " + uri.getPath());
+                LI(TAG,"URI: " + uri.toString());
+                LI(TAG,"File Name: " + getFileNameFromUri(uri));
+            }
         }
     }
 
