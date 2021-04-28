@@ -271,8 +271,8 @@ public class MainActivity extends AppCompatActivity {
                 ClipData.Item item = clip.getItemAt(i);
                 Uri uri = item.getUri();
 
-                LI(TAG,"Path: " + uri.getPath());
-                LI(TAG,"URI: " + uri.toString());
+                Log.i(TAG,"Path: " + uri.getPath());
+                Log.i(TAG,"URI: " + uri.toString());
                 LI(TAG,"File Name: " + getFileNameFromUri(uri));
             }
         }
