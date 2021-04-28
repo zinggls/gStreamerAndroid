@@ -5,9 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -204,12 +206,34 @@ public class MainActivity extends AppCompatActivity {
                 btnRcv.setEnabled(false);
                 LI(TAG, "Send button clicked");
 
-                int r = writer();
-                if(r==0) {
-                    LI(TAG, "Writer starts successfully");
-                }else{
-                    LI(TAG, "Writer failed to start, error=" + r);
-                }
+                AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                ad.setIcon(R.mipmap.ic_launcher);
+                ad.setTitle("Select Data Source");
+                ad.setMessage(" Choose data source for streaming\n\nSelf Mode: self generated data\nFile Mode: data from file");
+
+                ad.setPositiveButton("File mode", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        LI(TAG, "File mode selected");
+                        LE(TAG, "NOT IMPLEMENTED YET");
+                        dialog.dismiss();
+                    }
+                });
+
+                ad.setNegativeButton("Self mode", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        LI(TAG, "Self mode selected");
+                        int r = writer();
+                        if(r==0) {
+                            LI(TAG, "Writer starts successfully");
+                        }else{
+                            LE(TAG, "Writer failed to start, error=" + r);
+                        }
+                        dialog.dismiss();
+                    }
+                });
+                ad.show();
             }
         });
 
