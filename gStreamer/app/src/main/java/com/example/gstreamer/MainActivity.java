@@ -8,19 +8,23 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -216,6 +220,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         LI(TAG, "File mode selected");
                         LE(TAG, "NOT IMPLEMENTED YET");
+
+                        Intent intent = new Intent().setType("*/*").setAction(Intent.ACTION_OPEN_DOCUMENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        startActivityForResult(Intent.createChooser(intent, "Select a file"), 0);
                         dialog.dismiss();
                     }
                 });
@@ -238,6 +246,31 @@ public class MainActivity extends AppCompatActivity {
         });
 
         isStoragePermissionGranted();
+    }
+
+    private String getFileNameFromUri(Uri uri) {
+        String fileName = "";
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst())
+            fileName = cursor.getString( cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+
+        cursor.close();
+        return fileName;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 0 && resultCode == RESULT_OK) {
+            LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
+            Uri selectedfile = data.getData(); //The uri with the location of the file
+
+            // 경로 정보: selectedfile.getPath()
+            // 전체 URI 정보: selectedfile.toString()
+            LI(TAG,"Path: " + selectedfile.getPath());
+            LI(TAG,"URI: " + selectedfile.toString());
+            LI(TAG,"File Name: " + getFileNameFromUri(selectedfile));
+        }
     }
 
     @Override
