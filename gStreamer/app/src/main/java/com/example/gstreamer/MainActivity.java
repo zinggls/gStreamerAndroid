@@ -298,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
                     LI(TAG,"Real Path: " + getRealPathFromURI(uri));
                 }
             }else{
-                //When only one is selected, ClipData is nuill. data.getData() will be the Uri of the selected one
+                //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
                 LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
                 LI(TAG,"Real Path: " + getRealPathFromURI(data.getData()));
             }
