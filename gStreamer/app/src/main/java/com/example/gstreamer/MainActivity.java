@@ -221,7 +221,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         LI(TAG, "File mode selected");
-                        LE(TAG, "NOT IMPLEMENTED YET");
 
                         Intent chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
                         chooseFile.setType("*/*");
