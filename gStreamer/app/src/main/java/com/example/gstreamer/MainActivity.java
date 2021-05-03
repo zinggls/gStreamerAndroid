@@ -266,14 +266,18 @@ public class MainActivity extends AppCompatActivity {
             LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
 
             ClipData clip = data.getClipData();
-            LI(TAG, "ItemCount="+clip.getItemCount());
-            for(int i=0;i<clip.getItemCount();i++) {
-                ClipData.Item item = clip.getItemAt(i);
-                Uri uri = item.getUri();
+            if(clip!=null) {
+                LI(TAG, "ItemCount="+clip.getItemCount());
+                for(int i=0;i<clip.getItemCount();i++) {
+                    ClipData.Item item = clip.getItemAt(i);
+                    Uri uri = item.getUri();
 
-                Log.i(TAG,"Path: " + uri.getPath());
-                Log.i(TAG,"URI: " + uri.toString());
-                LI(TAG,"File Name: " + getFileNameFromUri(uri));
+                    Log.i(TAG,"Path: " + uri.getPath());
+                    Log.i(TAG,"URI: " + uri.toString());
+                    LI(TAG,"File Name: " + getFileNameFromUri(uri));
+                }
+            }else{
+                LE(TAG, "ClipData is nuill");
             }
         }
     }
