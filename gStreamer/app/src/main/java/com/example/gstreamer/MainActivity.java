@@ -24,6 +24,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
@@ -259,6 +261,25 @@ public class MainActivity extends AppCompatActivity {
         return fileName;
     }
 
+    private String getRealPathFromURI(Uri contentUri) {
+        if (contentUri.getPath().startsWith("/storage")) {
+            return contentUri.getPath();
+        }
+        String id = DocumentsContract.getDocumentId(contentUri).split(":")[1];
+        String[] columns = { MediaStore.Files.FileColumns.DATA };
+        String selection = MediaStore.Files.FileColumns._ID + " = " + id;
+        Cursor cursor = getContentResolver().query(MediaStore.Files.getContentUri("external"), columns, selection, null, null);
+        try {
+            int columnIndex = cursor.getColumnIndex(columns[0]);
+            if (cursor.moveToFirst()) {
+                return cursor.getString(columnIndex);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -275,10 +296,12 @@ public class MainActivity extends AppCompatActivity {
                     Log.i(TAG,"Path: " + uri.getPath());
                     Log.i(TAG,"URI: " + uri.toString());
                     LI(TAG,"File Name: " + getFileNameFromUri(uri));
+                    LI(TAG,"Real Path: " + getRealPathFromURI(uri));
                 }
             }else{
                 //When only one is selected, ClipData is nuill. data.getData() will be the Uri of the selected one
                 LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
+                LI(TAG,"Real Path: " + getRealPathFromURI(data.getData()));
             }
         }
     }
