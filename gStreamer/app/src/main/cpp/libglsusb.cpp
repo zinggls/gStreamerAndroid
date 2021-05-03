@@ -293,11 +293,23 @@ Java_com_example_gstreamer_MainActivity_count
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_gstreamer_MainActivity_writer
-        (JNIEnv *, jobject)
+        (JNIEnv *env, jobject, jstring filename)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"writer starts");
-    pthread_t tid;
-    return pthread_create(&tid,NULL,runThread,&gEpOut);
+
+    //argument passing and fopen test-----------------------------------(Start)
+    const char *string = env->GetStringUTFChars(filename,0);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"filename:%s",string);
+    FILE *pFile = fopen(string,"r");
+    if(pFile) {
+        __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", string);
+        fclose(pFile);
+    }else
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"fopen(%s) failed, error=%s",string,strerror(errno));
+    env->ReleaseStringUTFChars(filename,string);
+    //argument passing and fopen test-----------------------------------(End)
+
+    return 0;
 }
 
 extern "C" jint

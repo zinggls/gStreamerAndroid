@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     public native void close();
     public native int reader();
     public native long count();
-    public native int writer();
+    public native int writer(String filename);
 
     private void createList()
     {
@@ -234,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         LI(TAG, "Self mode selected");
-                        int r = writer();
+                        int r = writer("");
                         if(r==0) {
                             LI(TAG, "Writer starts successfully");
                         }else{
@@ -295,12 +295,25 @@ public class MainActivity extends AppCompatActivity {
                     //Log.i(TAG,"Path: " + uri.getPath());
                     //Log.i(TAG,"URI: " + uri.toString());
                     //LI(TAG,"File Name: " + getFileNameFromUri(uri));
-                    LI(TAG,getRealPathFromURI(uri));
+                    LI(TAG, getRealPathFromURI(uri));
+
+                    int r = writer(getRealPathFromURI(uri));
+                    if (r == 0) {
+                        LI(TAG, "Writer starts successfully, " + getRealPathFromURI(uri));
+                    } else {
+                        LE(TAG, "Writer failed to start, " + getRealPathFromURI(uri) + ", error=" + r);
+                    }
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
                 //LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
                 LI(TAG,getRealPathFromURI(data.getData()));
+                int r = writer(getRealPathFromURI(data.getData()));
+                if(r==0) {
+                    LI(TAG, "Writer starts successfully, " + getRealPathFromURI(data.getData()));
+                }else{
+                    LE(TAG, "Writer failed to start, " + getRealPathFromURI(data.getData()) + ", error=" + r);
+                }
             }
         }
     }
