@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 0 && resultCode == RESULT_OK) {
-            LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
+            //LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
 
             ClipData clip = data.getClipData();
             if(clip!=null) {
@@ -292,15 +292,15 @@ public class MainActivity extends AppCompatActivity {
                     ClipData.Item item = clip.getItemAt(i);
                     Uri uri = item.getUri();
 
-                    Log.i(TAG,"Path: " + uri.getPath());
-                    Log.i(TAG,"URI: " + uri.toString());
-                    LI(TAG,"File Name: " + getFileNameFromUri(uri));
-                    LI(TAG,"Real Path: " + getRealPathFromURI(uri));
+                    //Log.i(TAG,"Path: " + uri.getPath());
+                    //Log.i(TAG,"URI: " + uri.toString());
+                    //LI(TAG,"File Name: " + getFileNameFromUri(uri));
+                    LI(TAG,getRealPathFromURI(uri));
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
-                LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
-                LI(TAG,"Real Path: " + getRealPathFromURI(data.getData()));
+                //LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
+                LI(TAG,getRealPathFromURI(data.getData()));
             }
         }
     }
