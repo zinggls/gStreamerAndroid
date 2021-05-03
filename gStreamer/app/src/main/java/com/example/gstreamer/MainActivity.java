@@ -277,7 +277,8 @@ public class MainActivity extends AppCompatActivity {
                     LI(TAG,"File Name: " + getFileNameFromUri(uri));
                 }
             }else{
-                LE(TAG, "ClipData is nuill");
+                //When only one is selected, ClipData is nuill. data.getData() will be the Uri of the selected one
+                LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
             }
         }
     }
