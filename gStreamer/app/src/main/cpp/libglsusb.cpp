@@ -237,7 +237,6 @@ static void* writerThread(void *arg) {
         processFile(ep,buf,"");
     }else{
         FILEINFO info;
-        info.files_ = gFileList.size();
         for(unsigned int i=0;i<gFileList.size();i++) {
             setFileInfo(info,gFileList.size(),i,gFileList.at(i).size(),gFileList.at(i));
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
