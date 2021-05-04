@@ -5,6 +5,7 @@
 #include "fileinfo.h"
 #include <errno.h>
 #include <vector>
+#include <sys/stat.h>
 
 #define TAG "glsusb"
 #define BUF_SIZE    (8192*8*4)
@@ -223,8 +224,17 @@ static void* writerThread(void *arg) {
     if(gFileList.size()==0) {
         processFile(ep,buf,"");
     }else{
+        FILEINFO info;
+        info.files_ = gFileList.size();
         for(unsigned int i=0;i<gFileList.size();i++) {
-            __android_log_print(ANDROID_LOG_INFO,TAG,"Processing %d-%s",i,gFileList.at(i).c_str());
+            info.index_ = i;
+            info.nameSize_ = gFileList.at(i).size();
+            memset(info.name_,0,sizeof(info.name_));
+            memcpy(info.name_,gFileList.at(i).c_str(),info.nameSize_);
+            struct stat st;
+            stat(gFileList.at(i).c_str(),&st);
+            info.size_ = st.st_size;
+            __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
             processFile(ep,buf,gFileList.at(i));
         }
     }
