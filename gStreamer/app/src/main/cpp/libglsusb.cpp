@@ -333,21 +333,23 @@ Java_com_example_gstreamer_MainActivity_writer
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"writer starts");
 
-    jclass java_util_ArrayList = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
-    jmethodID java_util_ArrayList_size = env->GetMethodID (java_util_ArrayList, "size", "()I");
-    jmethodID java_util_ArrayList_get = env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
-    jint len = env->CallIntMethod(fileList, java_util_ArrayList_size);
-
     gFileList.clear();
-    for(jint i=0;i<len;i++) {
-        jstring element = static_cast<jstring>(env->CallObjectMethod(fileList, java_util_ArrayList_get, i));
-        const char* pchars = env->GetStringUTFChars(element, nullptr);
-        gFileList.emplace_back(pchars);
-        env->ReleaseStringUTFChars(element, pchars);
-        env->DeleteLocalRef(element);
+    if(fileList!=NULL) {
+        jclass java_util_ArrayList = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
+        jmethodID java_util_ArrayList_size = env->GetMethodID (java_util_ArrayList, "size", "()I");
+        jmethodID java_util_ArrayList_get = env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
+        jint len = env->CallIntMethod(fileList, java_util_ArrayList_size);
+
+        for(jint i=0;i<len;i++) {
+            jstring element = static_cast<jstring>(env->CallObjectMethod(fileList, java_util_ArrayList_get, i));
+            const char* pchars = env->GetStringUTFChars(element, nullptr);
+            gFileList.emplace_back(pchars);
+            env->ReleaseStringUTFChars(element, pchars);
+            env->DeleteLocalRef(element);
+        }
+        __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%d",gFileList.size());
+        for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
     }
-    __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%d",gFileList.size());
-    for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
 
     pthread_t tid;
     return pthread_create(&tid,NULL,writerThread,&gEpOut);
