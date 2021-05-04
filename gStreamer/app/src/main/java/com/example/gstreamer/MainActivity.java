@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     public native void close();
     public native int reader();
     public native long count();
-    public native int writer(String filename);
+    public native int writer(Object fileList);
 
     private void createList()
     {
@@ -234,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         LI(TAG, "Self mode selected");
-                        int r = writer("");
+                        int r = writer(null);
                         if(r==0) {
                             LI(TAG, "Writer starts successfully");
                         }else{
@@ -285,6 +285,7 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == 0 && resultCode == RESULT_OK) {
             //LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
 
+            ArrayList<String> fileList = new ArrayList<String>();
             ClipData clip = data.getClipData();
             if(clip!=null) {
                 LI(TAG, "ItemCount="+clip.getItemCount());
@@ -296,23 +297,20 @@ public class MainActivity extends AppCompatActivity {
                     //Log.i(TAG,"URI: " + uri.toString());
                     //LI(TAG,"File Name: " + getFileNameFromUri(uri));
                     LI(TAG, getRealPathFromURI(uri));
-
-                    int r = writer(getRealPathFromURI(uri));
-                    if (r == 0) {
-                        LI(TAG, "Writer starts successfully, " + getRealPathFromURI(uri));
-                    } else {
-                        LE(TAG, "Writer failed to start, " + getRealPathFromURI(uri) + ", error=" + r);
-                    }
+                    fileList.add(getRealPathFromURI(uri));
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
                 //LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
                 LI(TAG,getRealPathFromURI(data.getData()));
-                int r = writer(getRealPathFromURI(data.getData()));
+                fileList.add(getRealPathFromURI(data.getData()));
+            }
+            if(fileList.size()>0) {
+                int r = writer(fileList);
                 if(r==0) {
-                    LI(TAG, "Writer starts successfully, " + getRealPathFromURI(data.getData()));
+                    LI(TAG, "Writer starts successfully");
                 }else{
-                    LE(TAG, "Writer failed to start, " + getRealPathFromURI(data.getData()) + ", error=" + r);
+                    LE(TAG, "Writer failed to start, error=" + r);
                 }
             }
         }

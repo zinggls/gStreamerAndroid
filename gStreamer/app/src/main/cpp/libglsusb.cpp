@@ -4,6 +4,7 @@
 #include <android/log.h>
 #include "fileinfo.h"
 #include <errno.h>
+#include <vector>
 
 #define TAG "glsusb"
 #define BUF_SIZE    (8192*8*4)
@@ -26,6 +27,7 @@ static jmethodID gStaticCB = NULL;
 static JavaVM *gJavaVM = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
 static jobject gObject = NULL;
+static std::vector<std::string> gFileList;
 
 static int deviceInfo(libusb_device_handle *h)
 {
@@ -293,22 +295,25 @@ Java_com_example_gstreamer_MainActivity_count
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_gstreamer_MainActivity_writer
-        (JNIEnv *env, jobject, jstring filename)
+        (JNIEnv *env, jobject, jobject fileList)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"writer starts");
 
-    //argument passing and fopen test-----------------------------------(Start)
-    const char *string = env->GetStringUTFChars(filename,0);
-    __android_log_print(ANDROID_LOG_INFO,TAG,"filename:%s",string);
-    FILE *pFile = fopen(string,"r");
-    if(pFile) {
-        __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", string);
-        fclose(pFile);
-    }else
-        __android_log_print(ANDROID_LOG_ERROR,TAG,"fopen(%s) failed, error=%s",string,strerror(errno));
-    env->ReleaseStringUTFChars(filename,string);
-    //argument passing and fopen test-----------------------------------(End)
+    jclass java_util_ArrayList = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
+    jmethodID java_util_ArrayList_size = env->GetMethodID (java_util_ArrayList, "size", "()I");
+    jmethodID java_util_ArrayList_get = env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
+    jint len = env->CallIntMethod(fileList, java_util_ArrayList_size);
 
+    gFileList.clear();
+    for(jint i=0;i<len;i++) {
+        jstring element = static_cast<jstring>(env->CallObjectMethod(fileList, java_util_ArrayList_get, i));
+        const char* pchars = env->GetStringUTFChars(element, nullptr);
+        gFileList.emplace_back(pchars);
+        env->ReleaseStringUTFChars(element, pchars);
+        env->DeleteLocalRef(element);
+    }
+    __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%d",gFileList.size());
+    for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
     return 0;
 }
 
