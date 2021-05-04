@@ -213,6 +213,12 @@ static int SetFileInfo(unsigned char *buf, int bufSize, unsigned  char *sync, in
     return nOffset;
 }
 
+static void onFileSent(FILE *pFile,const char *pFileName)
+{
+    fclose(pFile);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s sent",pFileName);
+}
+
 static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,std::string filename)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"processFile ep=0x%x filename=%s",ep,filename.c_str());
@@ -229,20 +235,39 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
     }
 
     if(pFile) {
+        //Send FILEINFO first
         int r = SetFileInfo(buf,bufSize,gSync,sizeof(gSync),*pInfo);
         __android_log_print(ANDROID_LOG_INFO, TAG, "SetFileInfo %d bytes", r);
+        if((r=libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0))!=0) {
+            __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
+            return;
+        }
+        __android_log_print(ANDROID_LOG_INFO, TAG, "File Info sent %d bytes", BUF_SIZE);
     }
+
+    size_t szRead,bytes = 0;
     while(1){
+        if(pFile) {
+            szRead = fread(buf,1,bufSize,pFile);
+            if(szRead==0) {
+                assert(feof(pFile));
+                __android_log_print(ANDROID_LOG_ERROR,TAG,"fread=%d",szRead);
+                onFileSent(pFile,filename.c_str());
+                return;
+            }
+        }
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
         if(r==0){
-            //TODO
             gCount++;
+            if(pFile) {
+                bytes += szRead;
+                __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,bytes,pInfo->size_);
+            }
         }else{
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
             return;
         }
     }
-    fclose(pFile);
 }
 
 static void setFileInfo(FILEINFO &info,int files,int index,int nameSize,std::string name)
