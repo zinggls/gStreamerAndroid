@@ -198,13 +198,37 @@ cleanup:
     return NULL;
 }
 
+static void processFile(unsigned char ep,unsigned char *buf,std::string filename)
+{
+    __android_log_print(ANDROID_LOG_INFO,TAG,"processFile ep=0x%x filename=%s",ep,filename.c_str());
+    int r,transferred=0;
+    gCount = 0;
+    while(1){
+        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
+        if(r==0){
+            //TODO
+            gCount++;
+        }else{
+            __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
+            return;
+        }
+    }
+}
+
 static void* writerThread(void *arg) {
     unsigned char ep = *((unsigned char*)arg);
     __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
+    unsigned char *buf = new unsigned char[BUF_SIZE];
 
-    for(unsigned int i=0;i<gFileList.size();i++) {
-        __android_log_print(ANDROID_LOG_INFO,TAG,"Processing %d-%s",i,gFileList.at(i).c_str());
+    if(gFileList.size()==0) {
+        processFile(ep,buf,"");
+    }else{
+        for(unsigned int i=0;i<gFileList.size();i++) {
+            __android_log_print(ANDROID_LOG_INFO,TAG,"Processing %d-%s",i,gFileList.at(i).c_str());
+            processFile(ep,buf,gFileList.at(i));
+        }
     }
+    delete [] buf;
     return NULL;
 }
 
