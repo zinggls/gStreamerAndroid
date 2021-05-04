@@ -312,6 +312,8 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     LE(TAG, "Writer failed to start, error=" + r);
                 }
+            }else{
+                LE(TAG, "File list is empty," + fileList.size());
             }
         }
     }
