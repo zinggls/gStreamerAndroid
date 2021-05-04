@@ -198,6 +198,12 @@ cleanup:
     return NULL;
 }
 
+static void* writerThread(void *arg) {
+    unsigned char ep = *((unsigned char*)arg);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
+    return NULL;
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_gstreamer_MainActivity_stringFromJNI(
         JNIEnv* env,
@@ -314,7 +320,9 @@ Java_com_example_gstreamer_MainActivity_writer
     }
     __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%d",gFileList.size());
     for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
-    return 0;
+
+    pthread_t tid;
+    return pthread_create(&tid,NULL,writerThread,&gEpOut);
 }
 
 extern "C" jint
