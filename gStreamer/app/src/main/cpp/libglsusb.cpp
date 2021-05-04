@@ -216,6 +216,18 @@ static void processFile(unsigned char ep,unsigned char *buf,std::string filename
     }
 }
 
+static void setFileInfo(FILEINFO &info,int files,int index,int nameSize,std::string name)
+{
+    info.files_ = files;
+    info.index_ = index;
+    info.nameSize_ = nameSize;
+    memset(info.name_,0,sizeof(info.name_));
+    memcpy(info.name_,name.c_str(),info.nameSize_);
+    struct stat st;
+    stat(name.c_str(),&st);
+    info.size_ = st.st_size;
+}
+
 static void* writerThread(void *arg) {
     unsigned char ep = *((unsigned char*)arg);
     __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
@@ -227,13 +239,7 @@ static void* writerThread(void *arg) {
         FILEINFO info;
         info.files_ = gFileList.size();
         for(unsigned int i=0;i<gFileList.size();i++) {
-            info.index_ = i;
-            info.nameSize_ = gFileList.at(i).size();
-            memset(info.name_,0,sizeof(info.name_));
-            memcpy(info.name_,gFileList.at(i).c_str(),info.nameSize_);
-            struct stat st;
-            stat(gFileList.at(i).c_str(),&st);
-            info.size_ = st.st_size;
+            setFileInfo(info,gFileList.size(),i,gFileList.at(i).size(),gFileList.at(i));
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
             processFile(ep,buf,gFileList.at(i));
         }
