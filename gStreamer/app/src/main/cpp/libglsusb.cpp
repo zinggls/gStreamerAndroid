@@ -199,7 +199,7 @@ cleanup:
     return NULL;
 }
 
-static void processFile(unsigned char ep,unsigned char *buf,std::string filename)
+static void processFile(unsigned char ep,unsigned char *buf,int bufSize,std::string filename)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"processFile ep=0x%x filename=%s",ep,filename.c_str());
     int r,transferred=0;
@@ -245,13 +245,13 @@ static void* writerThread(void *arg) {
     unsigned char *buf = new unsigned char[BUF_SIZE];
 
     if(gFileList.size()==0) {
-        processFile(ep,buf,"");
+        processFile(ep,buf,BUF_SIZE,"");
     }else{
         FILEINFO info;
         for(unsigned int i=0;i<gFileList.size();i++) {
             setFileInfo(info,gFileList.size(),i,gFileList.at(i).size(),gFileList.at(i));
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
-            processFile(ep,buf,gFileList.at(i));
+            processFile(ep,buf,BUF_SIZE,gFileList.at(i));
         }
     }
     delete [] buf;
