@@ -270,7 +270,7 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
     }
 }
 
-static void setFileInfo(FILEINFO &info,int files,int index,int nameSize,std::string name)
+static void FileInfo(FILEINFO &info,int files,int index,int nameSize,std::string name)
 {
     info.files_ = files;
     info.index_ = index;
@@ -292,7 +292,7 @@ static void* writerThread(void *arg) {
     }else{
         FILEINFO info;
         for(unsigned int i=0;i<gFileList.size();i++) {
-            setFileInfo(info,gFileList.size(),i,gFileList.at(i).size(),gFileList.at(i));
+            FileInfo(info,gFileList.size(),i,gFileList.at(i).size(),gFileList.at(i));
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
             processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i));
         }
