@@ -201,6 +201,10 @@ cleanup:
 static void* writerThread(void *arg) {
     unsigned char ep = *((unsigned char*)arg);
     __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
+
+    for(unsigned int i=0;i<gFileList.size();i++) {
+        __android_log_print(ANDROID_LOG_INFO,TAG,"Processing %d-%s",i,gFileList.at(i).c_str());
+    }
     return NULL;
 }
 
