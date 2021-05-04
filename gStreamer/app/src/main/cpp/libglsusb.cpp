@@ -271,13 +271,23 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
     }
 }
 
-static void FileInfo(FILEINFO &info,int files,int index,int nameSize,std::string name)
+static std::string stripPath(std::string pathName)
 {
+    size_t found = pathName.rfind("/");
+    if(found!=std::string::npos) {
+        return pathName.substr(found+1);    //1 is to exclude starting '/'
+    }
+    return pathName;
+}
+
+static void FileInfo(FILEINFO &info,int files,int index,std::string name)
+{
+    std::string strippedName = stripPath(name);
     info.files_ = files;
     info.index_ = index;
-    info.nameSize_ = nameSize;
+    info.nameSize_ = strippedName.size();
     memset(info.name_,0,sizeof(info.name_));
-    memcpy(info.name_,name.c_str(),info.nameSize_);
+    memcpy(info.name_,strippedName.c_str(),info.nameSize_);
     struct stat st;
     stat(name.c_str(),&st);
     info.size_ = st.st_size;
@@ -293,7 +303,7 @@ static void* writerThread(void *arg) {
     }else{
         FILEINFO info;
         for(unsigned int i=0;i<gFileList.size();i++) {
-            FileInfo(info,gFileList.size(),i,gFileList.at(i).size(),gFileList.at(i));
+            FileInfo(info,gFileList.size(),i,gFileList.at(i));
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
             processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i));
         }
