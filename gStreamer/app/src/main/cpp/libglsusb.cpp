@@ -199,7 +199,21 @@ cleanup:
     return NULL;
 }
 
-static void processFile(unsigned char ep,unsigned char *buf,int bufSize,std::string filename)
+static int SetFileInfo(unsigned char *buf, int bufSize, unsigned  char *sync, int syncSize, FILEINFO &info)
+{
+    int nOffset = 0;
+    memcpy(buf + nOffset, sync, syncSize); nOffset += syncSize;
+    memcpy(buf + nOffset, &info.index_, sizeof(int)); nOffset += sizeof(int);
+    memcpy(buf + nOffset, &info.files_, sizeof(int)); nOffset += sizeof(int);
+    memcpy(buf + nOffset, &info.nameSize_, sizeof(int)); nOffset += sizeof(int);
+    memcpy(buf + nOffset, info.name_, info.nameSize_); nOffset += info.nameSize_;
+    memcpy(buf + nOffset, &info.size_, sizeof(unsigned int)); nOffset += sizeof(unsigned int);
+
+    assert(nOffset <= bufSize);	//len보다 작거나 같다는 가정
+    return nOffset;
+}
+
+static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,std::string filename)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"processFile ep=0x%x filename=%s",ep,filename.c_str());
     int r,transferred=0;
@@ -214,6 +228,10 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,std::str
             __android_log_print(ANDROID_LOG_ERROR,TAG,"fopen(%s) failed, error=%s",filename.c_str(),strerror(errno));
     }
 
+    if(pFile) {
+        int r = SetFileInfo(buf,bufSize,gSync,sizeof(gSync),*pInfo);
+        __android_log_print(ANDROID_LOG_INFO, TAG, "SetFileInfo %d bytes", r);
+    }
     while(1){
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
         if(r==0){
@@ -245,13 +263,13 @@ static void* writerThread(void *arg) {
     unsigned char *buf = new unsigned char[BUF_SIZE];
 
     if(gFileList.size()==0) {
-        processFile(ep,buf,BUF_SIZE,"");
+        processFile(ep,buf,BUF_SIZE,NULL,"");
     }else{
         FILEINFO info;
         for(unsigned int i=0;i<gFileList.size();i++) {
             setFileInfo(info,gFileList.size(),i,gFileList.at(i).size(),gFileList.at(i));
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
-            processFile(ep,buf,BUF_SIZE,gFileList.at(i));
+            processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i));
         }
     }
     delete [] buf;
