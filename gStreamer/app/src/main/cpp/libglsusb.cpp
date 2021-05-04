@@ -204,6 +204,16 @@ static void processFile(unsigned char ep,unsigned char *buf,std::string filename
     __android_log_print(ANDROID_LOG_INFO,TAG,"processFile ep=0x%x filename=%s",ep,filename.c_str());
     int r,transferred=0;
     gCount = 0;
+
+    FILE *pFile = NULL;
+    if(!filename.empty()) {
+        pFile = fopen(filename.c_str(),"r");
+        if(pFile) {
+            __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", filename.c_str());
+        }else
+            __android_log_print(ANDROID_LOG_ERROR,TAG,"fopen(%s) failed, error=%s",filename.c_str(),strerror(errno));
+    }
+
     while(1){
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
         if(r==0){
@@ -214,6 +224,7 @@ static void processFile(unsigned char ep,unsigned char *buf,std::string filename
             return;
         }
     }
+    fclose(pFile);
 }
 
 static void setFileInfo(FILEINFO &info,int files,int index,int nameSize,std::string name)
