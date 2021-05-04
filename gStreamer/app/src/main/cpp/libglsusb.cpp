@@ -242,6 +242,7 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
             return;
         }
+        gCount++;
         __android_log_print(ANDROID_LOG_INFO, TAG, "File Info sent %d bytes", BUF_SIZE);
     }
 
