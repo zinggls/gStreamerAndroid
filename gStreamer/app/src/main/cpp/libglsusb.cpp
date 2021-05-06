@@ -351,7 +351,7 @@ Java_com_example_gstreamer_MainActivity_stringFromJNI(
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_gstreamer_MainActivity_open
-        (JNIEnv *, jobject, jint fileDescriptor)
+        (JNIEnv *env, jobject thiz, jint fileDescriptor)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"open starts");
     int r;
@@ -382,13 +382,15 @@ Java_com_example_gstreamer_MainActivity_open
     __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_kernel_driver_active = %d",r);
     if(r<0) return r;
 
+    gObject = env->NewGlobalRef(thiz);
     return 0;
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_gstreamer_MainActivity_close
-        (JNIEnv *, jobject)
+        (JNIEnv *env, jobject thiz)
 {
+    env->DeleteGlobalRef(gObject);
     libusb_exit(NULL);
 }
 
@@ -410,7 +412,6 @@ Java_com_example_gstreamer_MainActivity_reader
     if(gOnFileReceivedCB==0) {
         __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileReceived" ) ;
     }else{
-        gObject = env->NewGlobalRef(thiz);  //TODO  DeleteGlobalRef call
         __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileReceived" ) ;
     }
 
@@ -467,7 +468,6 @@ Java_com_example_gstreamer_MainActivity_writer
         if(gOnAllFilesSentCB==0) {
             __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onAllFilesSent" ) ;
         }else{
-            gObject = env->NewGlobalRef(thiz);  //TODO  DeleteGlobalRef call
             __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onAllFilesSent" ) ;
         }
     }
