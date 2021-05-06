@@ -397,10 +397,6 @@ public class MainActivity extends AppCompatActivity {
      */
     public native String stringFromJNI();
 
-    public static void callback(){
-        Log.i(TAG,"callback");
-    }
-
     public void onFileReceived(String s)
     {
         Log.i(TAG,"onFileReceived");

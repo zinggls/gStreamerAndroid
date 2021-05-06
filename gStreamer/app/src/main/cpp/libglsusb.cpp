@@ -25,7 +25,6 @@ static unsigned char gSync[4] = {0x07, 0x3a, 0xb6, 0x99 };
 static Mode gMode = NOT_DEF;
 static const char *gClassName = "com/example/gstreamer/MainActivity";
 static jclass gClass = NULL;
-static jmethodID gStaticCB = NULL;
 static JavaVM *gJavaVM = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
 static jmethodID gOnFileSentCB = NULL;
@@ -124,7 +123,6 @@ static void onFileClose(FILE *pFile,const char *pFileName)
     }
 
     jstring js = v.m_env->NewStringUTF(pFileName);
-    v.m_env->CallStaticVoidMethod(gClass, gStaticCB);
     v.m_env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
 }
 
@@ -410,14 +408,6 @@ Java_com_example_gstreamer_MainActivity_reader
     }
 
     gClass = (jclass)env->NewGlobalRef(cls);
-    gStaticCB = env->GetStaticMethodID(cls, "callback", "()V");
-    if (gStaticCB == 0 ) {
-        __android_log_print( ANDROID_LOG_INFO, TAG, "Can't find the function" ) ;
-        env->DeleteGlobalRef(gClass ) ;
-    } else {
-        __android_log_print( ANDROID_LOG_INFO, TAG, "Method connection ok") ;
-        env->CallStaticVoidMethod(cls, gStaticCB );
-    }
 
     gOnFileReceivedCB = env->GetMethodID(cls,"onFileReceived","(Ljava/lang/String;)V");
     if(gOnFileReceivedCB==0) {
