@@ -27,6 +27,7 @@ static jclass gClass = NULL;
 static jmethodID gStaticCB = NULL;
 static JavaVM *gJavaVM = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
+static jmethodID gOnAllFilesSentCB = NULL;
 static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
 
@@ -306,6 +307,32 @@ static void FileInfo(FILEINFO &info,int files,int index,std::string name)
     info.size_ = st.st_size;
 }
 
+static void allFilesSent()
+{
+    int status;
+    JNIEnv *env;
+    bool isAttached = false;
+
+    assert(gJavaVM);
+    status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < JNI_OK){
+        assert(status==JNI_EDETACHED);
+        __android_log_print(ANDROID_LOG_INFO,TAG,"allFilesSent: failed to get JNI environment, assuming native thread, %d",status);
+        status = gJavaVM->AttachCurrentThread(&env, NULL);
+        if(status < JNI_OK) {
+            __android_log_print(ANDROID_LOG_ERROR,TAG,"allFilesSent: failed to attach current thread, %d",status);
+            return;
+        }
+        __android_log_print(ANDROID_LOG_INFO,TAG,"allFilesSent: Attached to current thread, %d",status);
+        isAttached = true;
+    }
+
+    jstring js = env->NewStringUTF("Terminating writer thread");
+    env->CallVoidMethod(gObject,gOnAllFilesSentCB,js);
+
+    if(isAttached) gJavaVM->DetachCurrentThread();
+}
+
 static void* writerThread(void *arg) {
     unsigned char ep = *((unsigned char*)arg);
     __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
@@ -322,6 +349,7 @@ static void* writerThread(void *arg) {
         }
     }
     delete [] buf;
+    allFilesSent();
     return NULL;
 }
 
@@ -422,7 +450,7 @@ Java_com_example_gstreamer_MainActivity_count
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_gstreamer_MainActivity_writer
-        (JNIEnv *env, jobject, jobject fileList)
+        (JNIEnv *env, jobject thiz, jobject fileList)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"writer starts");
 
@@ -442,6 +470,22 @@ Java_com_example_gstreamer_MainActivity_writer
         }
         __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%d",gFileList.size());
         for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
+
+        __android_log_print(ANDROID_LOG_INFO, TAG, "FindClass...%s", gClassName);
+        jclass cls = env->FindClass(gClassName);
+        if(cls == NULL){
+            __android_log_print(ANDROID_LOG_ERROR, TAG, "Can't find the class, %s", gClassName);
+        } else {
+            __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
+        }
+
+        gOnAllFilesSentCB = env->GetMethodID(cls,"onAllFilesSent","(Ljava/lang/String;)V");
+        if(gOnAllFilesSentCB==0) {
+            __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onAllFilesSent" ) ;
+        }else{
+            gObject = env->NewGlobalRef(thiz);  //TODO  DeleteGlobalRef call
+            __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onAllFilesSent" ) ;
+        }
     }
 
     pthread_t tid;

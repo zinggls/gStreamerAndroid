@@ -411,4 +411,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void onAllFilesSent(String s)
+    {
+        Log.i(TAG,"onAllFilesSent");
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                btnCon.setEnabled(false);
+                btnSnd.setEnabled(true);
+                btnRcv.setEnabled(true);
+                LI(TAG,s);
+            }
+        });
+    }
 }
