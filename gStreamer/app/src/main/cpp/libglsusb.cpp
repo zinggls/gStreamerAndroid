@@ -28,6 +28,7 @@ static jclass gClass = NULL;
 static jmethodID gStaticCB = NULL;
 static JavaVM *gJavaVM = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
+static jmethodID gOnFileSentCB = NULL;
 static jmethodID gOnAllFilesSentCB = NULL;
 static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
@@ -221,6 +222,17 @@ static void onFileSent(FILE *pFile,const char *pFileName)
 {
     fclose(pFile);
     __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s sent",pFileName);
+
+    JavaVm v(gJavaVM);
+    if(v.getEnv(JNI_VERSION_1_4)){
+        __android_log_print(ANDROID_LOG_INFO,TAG,"Attached to current thread");
+    }else{
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"failed to attach to current thread");
+        return;
+    }
+
+    jstring js = v.m_env->NewStringUTF(pFileName);
+    v.m_env->CallVoidMethod(gObject,gOnFileSentCB,js);
 }
 
 static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,std::string filename)
@@ -455,6 +467,13 @@ Java_com_example_gstreamer_MainActivity_writer
             __android_log_print(ANDROID_LOG_ERROR, TAG, "Can't find the class, %s", gClassName);
         } else {
             __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
+        }
+
+        gOnFileSentCB = env->GetMethodID(cls,"onFileSent","(Ljava/lang/String;)V");
+        if(gOnFileSentCB==0) {
+            __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileSent" ) ;
+        }else{
+            __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileSent" ) ;
         }
 
         gOnAllFilesSentCB = env->GetMethodID(cls,"onAllFilesSent","(Ljava/lang/String;)V");
