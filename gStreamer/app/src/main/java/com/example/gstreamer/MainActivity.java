@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
         pgFile = (ProgressBar)findViewById(R.id.progressBarFile);
         pgFile.setMax(100);
         pgFile.setProgress(0);
+        pgFile.setVisibility(View.INVISIBLE);
 
         handler = new Handler(){
             @Override
@@ -320,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
             if(fileList.size()>0) {
                 int r = writer(fileList);
                 if(r==0) {
+                    pgFile.setVisibility(View.VISIBLE);
                     LI(TAG, "Writer starts successfully");
                 }else{
                     LE(TAG, "Writer failed to start, error=" + r);
