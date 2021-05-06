@@ -144,6 +144,9 @@ static void* readerThread(void *arg)
 
     unsigned char *buf = new unsigned char[BUF_SIZE];
 
+    JavaVm v(gJavaVM);
+    assert(v.getEnv(JNI_VERSION_1_4));
+
     libusb_clear_halt(gDevh, ep);
     __android_log_print(ANDROID_LOG_INFO,TAG,"readerThread starts(ep:0x%x)...",ep);
     memset(buf,'\0',BUF_SIZE);
@@ -174,6 +177,8 @@ static void* readerThread(void *arg)
                 pFile = fopen(path,"w");
                 if(pFile) {
                     __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", path);
+                    jstring js = v.m_env->NewStringUTF((std::string("Receiving '")+std::string (info.name_)+std::string("'")).c_str());
+                    v.m_env->CallVoidMethod(gObject,gOnMessage,js);
                 }else
                     __android_log_print(ANDROID_LOG_INFO,TAG,"fopen(%s) failed, error=%s",path,strerror(errno));
             }else{
