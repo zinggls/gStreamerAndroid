@@ -40,6 +40,16 @@ static std::string stripPath(std::string pathName)
     return pathName;
 }
 
+static jclass findClass(JNIEnv *env,const char *className)
+{
+    return env->FindClass(className);
+}
+
+static jmethodID getMethod(JNIEnv *env,jclass clazz, const char *funcName, const char *signature)
+{
+    return env->GetMethodID(clazz,funcName,signature);
+}
+
 static int deviceInfo(libusb_device_handle *h)
 {
     libusb_device *dev = libusb_get_device(h);
@@ -340,6 +350,39 @@ static void* writerThread(void *arg) {
     return NULL;
 }
 
+static void initFuncPointers(JNIEnv *env)
+{
+    __android_log_print(ANDROID_LOG_INFO, TAG, "FindClass...%s", gClassName);
+
+    jclass cls = findClass(env,gClassName);
+    if(cls == NULL){
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "Can't find the class, %s", gClassName);
+    } else {
+        __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
+    }
+
+    gOnFileReceivedCB = getMethod(env,cls,"onFileReceived","(Ljava/lang/String;)V");
+    if(gOnFileReceivedCB==0) {
+        __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileReceived" ) ;
+    }else{
+        __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileReceived" ) ;
+    }
+
+    gOnFileSentCB = getMethod(env,cls,"onFileSent","(Ljava/lang/String;)V");
+    if(gOnFileSentCB==0) {
+        __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileSent" ) ;
+    }else{
+        __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileSent" ) ;
+    }
+
+    gOnAllFilesSentCB = getMethod(env,cls,"onAllFilesSent","(Ljava/lang/String;)V");
+    if(gOnAllFilesSentCB==0) {
+        __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onAllFilesSent" ) ;
+    }else{
+        __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onAllFilesSent" ) ;
+    }
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_gstreamer_MainActivity_stringFromJNI(
         JNIEnv* env,
@@ -383,6 +426,7 @@ Java_com_example_gstreamer_MainActivity_open
     if(r<0) return r;
 
     gObject = env->NewGlobalRef(thiz);
+    initFuncPointers(env);
     return 0;
 }
 
@@ -399,21 +443,6 @@ Java_com_example_gstreamer_MainActivity_reader
         (JNIEnv *env, jobject thiz)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"reader starts");
-
-    __android_log_print(ANDROID_LOG_INFO, TAG, "FindClass...%s", gClassName);
-    jclass cls = env->FindClass(gClassName);
-    if(cls == NULL){
-        __android_log_print(ANDROID_LOG_ERROR, TAG, "Can't find the class, %s", gClassName);
-    } else {
-        __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
-    }
-
-    gOnFileReceivedCB = env->GetMethodID(cls,"onFileReceived","(Ljava/lang/String;)V");
-    if(gOnFileReceivedCB==0) {
-        __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileReceived" ) ;
-    }else{
-        __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileReceived" ) ;
-    }
 
     pthread_t tid;
     return pthread_create(&tid, NULL, readerThread, &gEpIN);
@@ -448,28 +477,6 @@ Java_com_example_gstreamer_MainActivity_writer
         }
         __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%d",gFileList.size());
         for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
-
-        __android_log_print(ANDROID_LOG_INFO, TAG, "FindClass...%s", gClassName);
-        jclass cls = env->FindClass(gClassName);
-        if(cls == NULL){
-            __android_log_print(ANDROID_LOG_ERROR, TAG, "Can't find the class, %s", gClassName);
-        } else {
-            __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
-        }
-
-        gOnFileSentCB = env->GetMethodID(cls,"onFileSent","(Ljava/lang/String;)V");
-        if(gOnFileSentCB==0) {
-            __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileSent" ) ;
-        }else{
-            __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileSent" ) ;
-        }
-
-        gOnAllFilesSentCB = env->GetMethodID(cls,"onAllFilesSent","(Ljava/lang/String;)V");
-        if(gOnAllFilesSentCB==0) {
-            __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onAllFilesSent" ) ;
-        }else{
-            __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onAllFilesSent" ) ;
-        }
     }
 
     pthread_t tid;
