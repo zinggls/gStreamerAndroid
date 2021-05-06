@@ -3,6 +3,7 @@
 #include <libusbi.h>
 #include <android/log.h>
 #include "fileinfo.h"
+#include "JavaVm.h"
 #include <errno.h>
 #include <vector>
 #include <sys/stat.h>
@@ -102,31 +103,19 @@ static int getFileInfo(unsigned char *buffer, int bufferSize, int syncSize, FILE
 
 static void onFileClose(FILE *pFile,const char *pFileName)
 {
-    int status;
-    JNIEnv *env;
-    bool isAttached = false;
-
     fclose(pFile);
 
-    assert(gJavaVM);
-    status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
-    if(status < JNI_OK){
-        assert(status==JNI_EDETACHED);
-        __android_log_print(ANDROID_LOG_INFO,TAG,"onFileClose: failed to get JNI environment, assuming native thread, %d",status);
-        status = gJavaVM->AttachCurrentThread(&env, NULL);
-        if(status < JNI_OK) {
-            __android_log_print(ANDROID_LOG_ERROR,TAG,"onFileClose: failed to attach current thread, %d",status);
-            return;
-        }
-        __android_log_print(ANDROID_LOG_INFO,TAG,"onFileClose: Attached to current thread, %d",status);
-        isAttached = true;
+    JavaVm v(gJavaVM);
+    if(v.getEnv(JNI_VERSION_1_4)){
+        __android_log_print(ANDROID_LOG_INFO,TAG,"Attached to current thread");
+    }else{
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"failed to attach to current thread");
+        return;
     }
 
-    jstring js = env->NewStringUTF(pFileName);
-    env->CallStaticVoidMethod(gClass, gStaticCB);
-    env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
-
-    if(isAttached) gJavaVM->DetachCurrentThread();
+    jstring js = v.m_env->NewStringUTF(pFileName);
+    v.m_env->CallStaticVoidMethod(gClass, gStaticCB);
+    v.m_env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
 }
 
 static void* readerThread(void *arg)
@@ -310,28 +299,16 @@ static void FileInfo(FILEINFO &info,int files,int index,std::string name)
 
 static void allFilesSent()
 {
-    int status;
-    JNIEnv *env;
-    bool isAttached = false;
-
-    assert(gJavaVM);
-    status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
-    if(status < JNI_OK){
-        assert(status==JNI_EDETACHED);
-        __android_log_print(ANDROID_LOG_INFO,TAG,"allFilesSent: failed to get JNI environment, assuming native thread, %d",status);
-        status = gJavaVM->AttachCurrentThread(&env, NULL);
-        if(status < JNI_OK) {
-            __android_log_print(ANDROID_LOG_ERROR,TAG,"allFilesSent: failed to attach current thread, %d",status);
-            return;
-        }
-        __android_log_print(ANDROID_LOG_INFO,TAG,"allFilesSent: Attached to current thread, %d",status);
-        isAttached = true;
+    JavaVm v(gJavaVM);
+    if(v.getEnv(JNI_VERSION_1_4)){
+        __android_log_print(ANDROID_LOG_INFO,TAG,"Attached to current thread");
+    }else{
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"failed to attach to current thread");
+        return;
     }
 
-    jstring js = env->NewStringUTF("Terminating writer thread");
-    env->CallVoidMethod(gObject,gOnAllFilesSentCB,js);
-
-    if(isAttached) gJavaVM->DetachCurrentThread();
+    jstring js = v.m_env->NewStringUTF("Terminating writer thread");
+    v.m_env->CallVoidMethod(gObject,gOnAllFilesSentCB,js);
 }
 
 static void* writerThread(void *arg) {
