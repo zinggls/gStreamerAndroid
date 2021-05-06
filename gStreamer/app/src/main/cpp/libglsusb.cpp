@@ -203,6 +203,7 @@ cleanup:
 static void convertNameFromAsciiToUnicode(unsigned char *buffer, int bufferSize, char *targetName)
 {
     int j = 0;
+    memset(targetName,0,2*bufferSize);
     for(int i=0;i<bufferSize;i++) {
         targetName[j] = buffer[i];
         j+=2;
