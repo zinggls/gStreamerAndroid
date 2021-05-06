@@ -199,14 +199,27 @@ cleanup:
     return NULL;
 }
 
-static int SetFileInfo(unsigned char *buf, int bufSize, unsigned  char *sync, int syncSize, FILEINFO &info)
+static void convertNameFromAsciiToUnicode(unsigned char *buffer, int bufferSize, char *targetName)
+{
+    int j = 0;
+    for(int i=0;i<bufferSize;i++) {
+        targetName[j] = buffer[i];
+        j+=2;
+    }
+}
+
+static int SetFileInfo(unsigned char *buf, int bufSize, unsigned  char *sync, int syncSize, FILEINFO info)
 {
     int nOffset = 0;
     memcpy(buf + nOffset, sync, syncSize); nOffset += syncSize;
     memcpy(buf + nOffset, &info.index_, sizeof(int)); nOffset += sizeof(int);
     memcpy(buf + nOffset, &info.files_, sizeof(int)); nOffset += sizeof(int);
-    memcpy(buf + nOffset, &info.nameSize_, sizeof(int)); nOffset += sizeof(int);
-    memcpy(buf + nOffset, info.name_, info.nameSize_); nOffset += info.nameSize_;
+
+    int modifiedSize = info.nameSize_*2;
+    memcpy(buf + nOffset, &modifiedSize, sizeof(int)); nOffset += sizeof(int);
+    convertNameFromAsciiToUnicode(reinterpret_cast<unsigned char *>(info.name_), info.nameSize_, reinterpret_cast<char *>(buf + nOffset));
+    nOffset+= modifiedSize;
+
     memcpy(buf + nOffset, &info.size_, sizeof(unsigned int)); nOffset += sizeof(unsigned int);
 
     assert(nOffset <= bufSize);	//len보다 작거나 같다는 가정
