@@ -32,6 +32,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView list;
     List<String> listData;
     ArrayAdapter<String> listAdapter;
+    private ProgressBar pgFile;
 
     public native int open(int fileDescriptor);
     public native void close();
@@ -115,6 +117,9 @@ public class MainActivity extends AppCompatActivity {
 
         createButtons();
         createList();
+        pgFile = (ProgressBar)findViewById(R.id.progressBarFile);
+        pgFile.setMax(100);
+        pgFile.setProgress(0);
 
         handler = new Handler(){
             @Override
