@@ -486,14 +486,6 @@ JNI_OnLoad(JavaVM* vm, void* reserved)
         return JNI_ERR;
     }
     gJavaVM = vm;
-
-    __android_log_print(ANDROID_LOG_INFO, TAG, "FindClass...%s", gClassName);
-    jclass cls = env->FindClass(gClassName);
-    if(cls == NULL) {
-        __android_log_print(ANDROID_LOG_ERROR, TAG, "Can't find the class, %s", gClassName);
-        return JNI_ERR;
-    }
-    __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
     __android_log_print(ANDROID_LOG_INFO,TAG,"JNI_OnLoad end, JNIEnv=0x%x",env);
     return JNI_VERSION_1_6;
 }
