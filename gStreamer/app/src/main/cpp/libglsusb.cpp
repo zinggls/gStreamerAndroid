@@ -350,6 +350,15 @@ static void* writerThread(void *arg) {
     return NULL;
 }
 
+static void getMethodLog(jmethodID m, const char *funcName)
+{
+    if(m==0) {
+    __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s",funcName ) ;
+    }else{
+    __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok",funcName ) ;
+    }
+}
+
 static void initFuncPointers(JNIEnv *env)
 {
     __android_log_print(ANDROID_LOG_INFO, TAG, "FindClass...%s", gClassName);
@@ -362,25 +371,13 @@ static void initFuncPointers(JNIEnv *env)
     }
 
     gOnFileReceivedCB = getMethod(env,cls,"onFileReceived","(Ljava/lang/String;)V");
-    if(gOnFileReceivedCB==0) {
-        __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileReceived" ) ;
-    }else{
-        __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileReceived" ) ;
-    }
+    getMethodLog(gOnFileReceivedCB,"onFileReceived");
 
     gOnFileSentCB = getMethod(env,cls,"onFileSent","(Ljava/lang/String;)V");
-    if(gOnFileSentCB==0) {
-        __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onFileSent" ) ;
-    }else{
-        __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onFileSent" ) ;
-    }
+    getMethodLog(gOnFileSentCB,"onFileSent");
 
     gOnAllFilesSentCB = getMethod(env,cls,"onAllFilesSent","(Ljava/lang/String;)V");
-    if(gOnAllFilesSentCB==0) {
-        __android_log_print( ANDROID_LOG_ERROR, TAG, "Can't find the function: %s","onAllFilesSent" ) ;
-    }else{
-        __android_log_print( ANDROID_LOG_INFO, TAG, "%s Method connection ok","onAllFilesSent" ) ;
-    }
+    getMethodLog(gOnAllFilesSentCB,"onAllFilesSent");
 }
 
 extern "C" JNIEXPORT jstring JNICALL
