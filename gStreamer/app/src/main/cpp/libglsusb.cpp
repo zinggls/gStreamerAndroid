@@ -128,7 +128,7 @@ static void onFileClose(FILE *pFile,const char *pFileName)
     if(isAttached) gJavaVM->DetachCurrentThread();
 }
 
-static void* runThread(void *arg)
+static void* readerThread(void *arg)
 {
     int r;
     int transferred = 0;
@@ -137,7 +137,7 @@ static void* runThread(void *arg)
     unsigned char *buf = new unsigned char[BUF_SIZE];
 
     libusb_clear_halt(gDevh, ep);
-    __android_log_print(ANDROID_LOG_INFO,TAG,"runThread starts(ep:0x%x)...",ep);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"readerThread starts(ep:0x%x)...",ep);
     memset(buf,'\0',BUF_SIZE);
     gCount = 0;
 
@@ -410,7 +410,7 @@ Java_com_example_gstreamer_MainActivity_reader
     }
 
     pthread_t tid;
-    return pthread_create(&tid,NULL,runThread,&gEpIN);
+    return pthread_create(&tid, NULL, readerThread, &gEpIN);
 }
 
 extern "C" JNIEXPORT jlong JNICALL
