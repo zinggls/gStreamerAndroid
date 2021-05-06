@@ -33,6 +33,15 @@ static jmethodID gOnAllFilesSentCB = NULL;
 static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
 
+static std::string stripPath(std::string pathName)
+{
+    size_t found = pathName.rfind("/");
+    if(found!=std::string::npos) {
+        return pathName.substr(found+1);    //1 is to exclude starting '/'
+    }
+    return pathName;
+}
+
 static int deviceInfo(libusb_device_handle *h)
 {
     libusb_device *dev = libusb_get_device(h);
@@ -231,7 +240,7 @@ static void onFileSent(FILE *pFile,const char *pFileName)
         return;
     }
 
-    jstring js = v.m_env->NewStringUTF(pFileName);
+    jstring js = v.m_env->NewStringUTF(stripPath(pFileName).c_str());
     v.m_env->CallVoidMethod(gObject,gOnFileSentCB,js);
 }
 
@@ -285,15 +294,6 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
             return;
         }
     }
-}
-
-static std::string stripPath(std::string pathName)
-{
-    size_t found = pathName.rfind("/");
-    if(found!=std::string::npos) {
-        return pathName.substr(found+1);    //1 is to exclude starting '/'
-    }
-    return pathName;
 }
 
 static void FileInfo(FILEINFO &info,int files,int index,std::string name)
