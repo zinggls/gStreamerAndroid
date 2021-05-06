@@ -24,7 +24,6 @@ static unsigned char gEpOut = 0x02;   //Output EP
 static unsigned char gSync[4] = {0x07, 0x3a, 0xb6, 0x99 };
 static Mode gMode = NOT_DEF;
 static const char *gClassName = "com/example/gstreamer/MainActivity";
-static jclass gClass = NULL;
 static JavaVM *gJavaVM = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
 static jmethodID gOnFileSentCB = NULL;
@@ -406,8 +405,6 @@ Java_com_example_gstreamer_MainActivity_reader
     } else {
         __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
     }
-
-    gClass = (jclass)env->NewGlobalRef(cls);
 
     gOnFileReceivedCB = env->GetMethodID(cls,"onFileReceived","(Ljava/lang/String;)V");
     if(gOnFileReceivedCB==0) {
