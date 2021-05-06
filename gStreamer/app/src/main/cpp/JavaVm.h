@@ -5,8 +5,8 @@
 #ifndef GSTREAMER_JAVAVM_H
 #define GSTREAMER_JAVAVM_H
 
-#include "../../../../../../Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/jni.h"
-#include "../../../../../../Android/Sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/android/log.h"
+#include <jni.h>
+#include <android/log.h>
 
 #define TAG "glsusb"
 
