@@ -421,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                LI(TAG,s+" received");
+                LI(TAG,"'"+s+"' received");
             }
         });
     }
