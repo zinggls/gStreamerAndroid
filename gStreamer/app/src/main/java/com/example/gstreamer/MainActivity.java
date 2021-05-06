@@ -250,6 +250,13 @@ public class MainActivity extends AppCompatActivity {
         isStoragePermissionGranted();
     }
 
+    @Override
+    protected void onDestroy() {
+        close();
+        LI(TAG, "onDestroy");
+        super.onDestroy();
+    }
+
     private String getFileNameFromUri(Uri uri) {
         String fileName = "";
         Cursor cursor = getContentResolver().query(uri, null, null, null, null);
