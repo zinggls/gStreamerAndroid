@@ -404,6 +404,17 @@ public class MainActivity extends AppCompatActivity {
      */
     public native String stringFromJNI();
 
+    public void onMessage(String s)
+    {
+        Log.i(TAG,"onMessage");
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                LI(TAG,s);
+            }
+        });
+    }
+
     public void onFileReceived(String s)
     {
         Log.i(TAG,"onFileReceived");

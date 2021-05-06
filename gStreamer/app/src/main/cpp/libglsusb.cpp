@@ -25,6 +25,7 @@ static unsigned char gSync[4] = {0x07, 0x3a, 0xb6, 0x99 };
 static Mode gMode = NOT_DEF;
 static const char *gClassName = "com/example/gstreamer/MainActivity";
 static JavaVM *gJavaVM = NULL;
+static jmethodID gOnMessage = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
 static jmethodID gOnFileSentCB = NULL;
 static jmethodID gOnAllFilesSentCB = NULL;
@@ -335,6 +336,13 @@ static void* writerThread(void *arg) {
     __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
     unsigned char *buf = new unsigned char[BUF_SIZE];
 
+    JavaVm v(gJavaVM);
+    if(v.getEnv(JNI_VERSION_1_4)){
+        __android_log_print(ANDROID_LOG_INFO,TAG,"Attached to current thread");
+    }else{
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"failed to attach to current thread");
+    }
+
     if(gFileList.size()==0) {
         processFile(ep,buf,BUF_SIZE,NULL,"");
     }else{
@@ -342,6 +350,8 @@ static void* writerThread(void *arg) {
         for(unsigned int i=0;i<gFileList.size();i++) {
             FileInfo(info,gFileList.size(),i,gFileList.at(i));
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
+            jstring js = v.m_env->NewStringUTF((std::string("Sending '")+stripPath(gFileList.at(i))+std::string("'")).c_str());
+            v.m_env->CallVoidMethod(gObject,gOnMessage,js);
             processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i));
         }
     }
@@ -369,6 +379,9 @@ static void initFuncPointers(JNIEnv *env)
     } else {
         __android_log_print(ANDROID_LOG_INFO, TAG, "Class %s found", gClassName);
     }
+
+    gOnMessage = getMethod(env,cls,"onMessage","(Ljava/lang/String;)V");
+    getMethodLog(gOnMessage,"onMessage");
 
     gOnFileReceivedCB = getMethod(env,cls,"onFileReceived","(Ljava/lang/String;)V");
     getMethodLog(gOnFileReceivedCB,"onFileReceived");
