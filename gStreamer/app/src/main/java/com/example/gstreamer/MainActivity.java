@@ -310,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
                     //Log.i(TAG,"Path: " + uri.getPath());
                     //Log.i(TAG,"URI: " + uri.toString());
                     //LI(TAG,"File Name: " + getFileNameFromUri(uri));
-                    LI(TAG, getRealPathFromURI(uri));
+                    //LI(TAG, getRealPathFromURI(uri));
                     fileList.add(getRealPathFromURI(uri));
                 }
             }else{
