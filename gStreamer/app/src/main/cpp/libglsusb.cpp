@@ -36,6 +36,16 @@ static jmethodID gOnFileProgressCB = NULL;
 static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
 
+static std::string commas(std::string number)
+{
+    int n = number.length()-3;
+    while(n>0) {
+        number.insert(n,",");
+        n-=3;
+    }
+    return number;
+}
+
 static std::string stripPath(std::string pathName)
 {
     size_t found = pathName.rfind("/");
@@ -363,7 +373,7 @@ static void allFilesSent()
 
 static std::string elapsedTime(std::chrono::nanoseconds ns)
 {
-    return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count())+std::string(" ms");
+    return commas(std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count()))+std::string(" ms");
 }
 
 static void* writerThread(void *arg) {
