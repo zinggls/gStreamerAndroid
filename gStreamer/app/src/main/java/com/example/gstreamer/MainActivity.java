@@ -457,4 +457,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void onFileProgress(int percentage)
+    {
+        Log.i(TAG,"onFileProgress="+percentage);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                pgFile.setProgress(percentage);
+            }
+        });
+    }
 }

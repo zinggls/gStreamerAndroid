@@ -29,6 +29,7 @@ static jmethodID gOnMessage = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
 static jmethodID gOnFileSentCB = NULL;
 static jmethodID gOnAllFilesSentCB = NULL;
+static jmethodID gOnFileProgressCB = NULL;
 static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
 
@@ -134,6 +135,11 @@ static void onFileClose(FILE *pFile,const char *pFileName)
 
     jstring js = v.m_env->NewStringUTF(pFileName);
     v.m_env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
+}
+
+static int percent(float num,float denom)
+{
+    return (num/denom)*100;
 }
 
 static void* readerThread(void *arg)
@@ -263,6 +269,9 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
     int r,transferred=0;
     gCount = 0;
 
+    JavaVm v(gJavaVM);
+    assert(v.getEnv(JNI_VERSION_1_4));
+
     FILE *pFile = NULL;
     if(!filename.empty()) {
         pFile = fopen(filename.c_str(),"r");
@@ -301,6 +310,7 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
             if(pFile) {
                 bytes += szRead;
                 __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,bytes,pInfo->size_);
+                v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,pInfo->size_));
             }
         }else{
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
@@ -396,6 +406,9 @@ static void initFuncPointers(JNIEnv *env)
 
     gOnAllFilesSentCB = getMethod(env,cls,"onAllFilesSent","(Ljava/lang/String;)V");
     getMethodLog(gOnAllFilesSentCB,"onAllFilesSent");
+
+    gOnFileProgressCB  = getMethod(env,cls,"onFileProgress","(I)V");
+    getMethodLog(gOnFileProgressCB,"onFileProgress");
 }
 
 extern "C" JNIEXPORT jstring JNICALL
