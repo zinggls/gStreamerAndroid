@@ -406,7 +406,7 @@ static void* writerThread(void *arg) {
             auto start = std::chrono::high_resolution_clock::now();
             if(processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i))) {
                 auto stop = std::chrono::high_resolution_clock::now();
-                jstring js = v.m_env->NewStringUTF((std::string("elapsed :")+elapsedTime(stop-start)
+                jstring js = v.m_env->NewStringUTF((commas(std::to_string(info.size_))+"Bytes "+elapsedTime(stop-start)
                         +" "+Bps(info.size_,std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.)).c_str());
                 v.m_env->CallVoidMethod(gObject,gOnMessage,js);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"sec = %f",std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.);
