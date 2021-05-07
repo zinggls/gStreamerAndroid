@@ -205,6 +205,7 @@ static void* readerThread(void *arg)
                         onFileClose(pFile,info.name_);
                     }
                     __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",info.name_,bytes,info.size_);
+                    v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,info.size_));
                 }
             }
         }else{
