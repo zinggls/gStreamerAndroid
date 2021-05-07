@@ -350,6 +350,16 @@ static void allFilesSent()
     v.m_env->CallVoidMethod(gObject,gOnAllFilesSentCB,js);
 }
 
+static std::string fileOrder(int zeroBasedOrder,int totalFiles)
+{
+    std::string strOrder("[");
+    strOrder+= std::to_string(zeroBasedOrder+1);
+    strOrder+="/";
+    strOrder+=std::to_string(totalFiles);
+    strOrder+="] ";
+    return strOrder;
+}
+
 static void* writerThread(void *arg) {
     unsigned char ep = *((unsigned char*)arg);
     __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
@@ -369,12 +379,7 @@ static void* writerThread(void *arg) {
         for(unsigned int i=0;i<gFileList.size();i++) {
             FileInfo(info,gFileList.size(),i,gFileList.at(i));
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
-            std::string strOrder("[");
-            strOrder+= std::to_string(i+1);
-            strOrder+="/";
-            strOrder+=std::to_string(info.files_);
-            strOrder+="] ";
-            jstring js = v.m_env->NewStringUTF((strOrder+std::string("Sending '")+stripPath(gFileList.at(i))+std::string("'")).c_str());
+            jstring js = v.m_env->NewStringUTF((fileOrder(i,info.files_)+std::string("Sending '")+stripPath(gFileList.at(i))+std::string("'")).c_str());
             v.m_env->CallVoidMethod(gObject,gOnMessage,js);
             processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i));
         }
