@@ -203,7 +203,6 @@ public class MainActivity extends AppCompatActivity {
 
                 int r = reader();
                 if(r==0) {
-                    pgFile.setVisibility(View.VISIBLE);
                     LI(TAG, "Reader starts successfully");
                 }else{
                     LI(TAG, "Reader failed to start, error=" + r);
@@ -424,12 +423,24 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void onFileStartReceiving(String s)
+    {
+        Log.i(TAG,"onFileStartReceiving");
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                pgFile.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
     public void onFileReceived(String s)
     {
         Log.i(TAG,"onFileReceived");
         handler.post(new Runnable() {
             @Override
             public void run() {
+                pgFile.setVisibility(View.INVISIBLE);
                 LI(TAG,"'"+s+"' received");
             }
         });

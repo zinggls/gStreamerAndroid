@@ -27,6 +27,7 @@ static Mode gMode = NOT_DEF;
 static const char *gClassName = "com/example/gstreamer/MainActivity";
 static JavaVM *gJavaVM = NULL;
 static jmethodID gOnMessage = NULL;
+static jmethodID gOnFileStartRecceivingCB = NULL;
 static jmethodID gOnFileReceivedCB = NULL;
 static jmethodID gOnFileSentCB = NULL;
 static jmethodID gOnAllFilesSentCB = NULL;
@@ -186,6 +187,7 @@ static void* readerThread(void *arg)
                     __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", path);
                     jstring js = v.m_env->NewStringUTF((std::string("Receiving '")+std::string (info.name_)+std::string("'")).c_str());
                     v.m_env->CallVoidMethod(gObject,gOnMessage,js);
+                    v.m_env->CallVoidMethod(gObject,gOnFileStartRecceivingCB,NULL);
                 }else
                     __android_log_print(ANDROID_LOG_INFO,TAG,"fopen(%s) failed, error=%s",path,strerror(errno));
             }else{
@@ -404,6 +406,9 @@ static void initFuncPointers(JNIEnv *env)
 
     gOnMessage = getMethod(env,cls,"onMessage","(Ljava/lang/String;)V");
     getMethodLog(gOnMessage,"onMessage");
+
+    gOnFileStartRecceivingCB = getMethod(env,cls,"onFileStartReceiving","(Ljava/lang/String;)V");
+    getMethodLog(gOnFileStartRecceivingCB,"onFileStartReceiving");
 
     gOnFileReceivedCB = getMethod(env,cls,"onFileReceived","(Ljava/lang/String;)V");
     getMethodLog(gOnFileReceivedCB,"onFileReceived");
