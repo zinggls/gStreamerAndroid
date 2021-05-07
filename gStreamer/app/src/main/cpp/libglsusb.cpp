@@ -19,6 +19,11 @@ typedef enum{
     FILE_MODE
 } Mode;
 
+typedef struct{
+    std::chrono::high_resolution_clock::time_point start;
+    std::chrono::high_resolution_clock::time_point stop;
+}StopWatch;
+
 static libusb_device_handle *gDevh = NULL;
 static unsigned int gCount;
 static unsigned char gEpIN = 0x82;   //Input EP
@@ -35,6 +40,7 @@ static jmethodID gOnAllFilesSentCB = NULL;
 static jmethodID gOnFileProgressCB = NULL;
 static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
+static StopWatch gRcvWatch;
 
 static std::string commas(std::string number)
 {
@@ -44,6 +50,16 @@ static std::string commas(std::string number)
         n-=3;
     }
     return number;
+}
+
+static std::string elapsedTime(std::chrono::nanoseconds ns)
+{
+    return commas(std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count()))+std::string("ms");
+}
+
+static std::string Bps(unsigned int size,float sec)
+{
+    return commas(std::to_string((int)((float )size/sec)))+std::string("Bps");
 }
 
 static std::string stripPath(std::string pathName)
@@ -134,9 +150,10 @@ static int getFileInfo(unsigned char *buffer, int bufferSize, int syncSize, FILE
     return nOffset;
 }
 
-static void onFileClose(FILE *pFile,const char *pFileName)
+static void onFileClose(FILE *pFile,FILEINFO *pInfo)
 {
     fclose(pFile);
+    gRcvWatch.stop = std::chrono::high_resolution_clock::now();
 
     JavaVm v(gJavaVM);
     if(v.getEnv(JNI_VERSION_1_4)){
@@ -146,8 +163,11 @@ static void onFileClose(FILE *pFile,const char *pFileName)
         return;
     }
 
-    jstring js = v.m_env->NewStringUTF(pFileName);
+    jstring js = v.m_env->NewStringUTF(pInfo->name_);
     v.m_env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
+    js = v.m_env->NewStringUTF((commas(std::to_string(pInfo->size_))+"Bytes "+elapsedTime(gRcvWatch.stop-gRcvWatch.start)
+                                        +" "+Bps(pInfo->size_,std::chrono::duration_cast<std::chrono::milliseconds>(gRcvWatch.stop-gRcvWatch.start).count()/1000.)).c_str());
+    v.m_env->CallVoidMethod(gObject,gOnMessage,js);
 }
 
 static int percent(float num,float denom)
@@ -209,6 +229,7 @@ static void* readerThread(void *arg)
                     jstring js = v.m_env->NewStringUTF((fileOrder(info.index_,info.files_)+std::string("Receiving '")+std::string (info.name_)+std::string("'")).c_str());
                     v.m_env->CallVoidMethod(gObject,gOnMessage,js);
                     v.m_env->CallVoidMethod(gObject,gOnFileStartRecceivingCB,NULL);
+                    gRcvWatch.start = std::chrono::high_resolution_clock::now();
                 }else
                     __android_log_print(ANDROID_LOG_INFO,TAG,"fopen(%s) failed, error=%s",path,strerror(errno));
             }else{
@@ -219,14 +240,14 @@ static void* readerThread(void *arg)
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
                         assert(szWrite==transferred);
                         bytes += transferred;
-                        if(bytes == info.size_) onFileClose(pFile,info.name_);
+                        if(bytes == info.size_) onFileClose(pFile,&info);
                     }else if(bytes+transferred > info.size_) {
                         size_t szWrite = fwrite(buf,1,info.size_-bytes,pFile);
                         assert(szWrite==(info.size_-bytes));
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
                         bytes += (info.size_-bytes);
                         assert(bytes==info.size_);
-                        onFileClose(pFile,info.name_);
+                        onFileClose(pFile,&info);
                     }
                     __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",info.name_,bytes,info.size_);
                     v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,info.size_));
@@ -369,16 +390,6 @@ static void allFilesSent()
 
     jstring js = v.m_env->NewStringUTF("Terminating writer thread");
     v.m_env->CallVoidMethod(gObject,gOnAllFilesSentCB,js);
-}
-
-static std::string elapsedTime(std::chrono::nanoseconds ns)
-{
-    return commas(std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count()))+std::string("ms");
-}
-
-static std::string Bps(unsigned int size,float sec)
-{
-    return commas(std::to_string((int)((float )size/sec)))+std::string("Bps");
 }
 
 static void* writerThread(void *arg) {
