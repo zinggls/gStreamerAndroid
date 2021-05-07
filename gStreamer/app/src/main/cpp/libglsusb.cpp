@@ -8,6 +8,7 @@
 #include <vector>
 #include <sys/stat.h>
 #include <string>
+#include <chrono>
 
 #define TAG "glsusb"
 #define BUF_SIZE    (8192*8*4)
@@ -277,7 +278,7 @@ static void onFileSent(FILE *pFile,const char *pFileName)
     v.m_env->CallVoidMethod(gObject,gOnFileSentCB,js);
 }
 
-static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,std::string filename)
+static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,std::string filename)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"processFile ep=0x%x filename=%s",ep,filename.c_str());
     int r,transferred=0;
@@ -301,7 +302,7 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
         __android_log_print(ANDROID_LOG_INFO, TAG, "SetFileInfo %d bytes", r);
         if((r=libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0))!=0) {
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
-            return;
+            return false;
         }
         gCount++;
         __android_log_print(ANDROID_LOG_INFO, TAG, "File Info sent %d bytes", BUF_SIZE);
@@ -315,7 +316,7 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
                 assert(feof(pFile));
                 __android_log_print(ANDROID_LOG_ERROR,TAG,"fread=%d",szRead);
                 onFileSent(pFile,filename.c_str());
-                return;
+                return true;
             }
         }
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
@@ -328,7 +329,7 @@ static void processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
             }
         }else{
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
-            return;
+            return false;
         }
     }
 }
@@ -360,6 +361,11 @@ static void allFilesSent()
     v.m_env->CallVoidMethod(gObject,gOnAllFilesSentCB,js);
 }
 
+static std::string elapsedTime(std::chrono::nanoseconds ns)
+{
+    return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count())+std::string(" ms");
+}
+
 static void* writerThread(void *arg) {
     unsigned char ep = *((unsigned char*)arg);
     __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
@@ -381,7 +387,13 @@ static void* writerThread(void *arg) {
             __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
             jstring js = v.m_env->NewStringUTF((fileOrder(i,info.files_)+std::string("Sending '")+stripPath(gFileList.at(i))+std::string("'")).c_str());
             v.m_env->CallVoidMethod(gObject,gOnMessage,js);
-            processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i));
+
+            auto start = std::chrono::high_resolution_clock::now();
+            if(processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i))) {
+                auto stop = std::chrono::high_resolution_clock::now();
+                jstring js = v.m_env->NewStringUTF((std::string("elapsed :")+elapsedTime(stop-start)).c_str());
+                v.m_env->CallVoidMethod(gObject,gOnMessage,js);
+            }
         }
     }
     delete [] buf;
