@@ -407,8 +407,11 @@ static void* writerThread(void *arg) {
             if(processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i))) {
                 auto stop = std::chrono::high_resolution_clock::now();
                 jstring js = v.m_env->NewStringUTF((std::string("elapsed :")+elapsedTime(stop-start)
-                        +" "+Bps(info.size_,std::chrono::duration_cast<std::chrono::seconds>(stop-start).count())).c_str());
+                        +" "+Bps(info.size_,std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.)).c_str());
                 v.m_env->CallVoidMethod(gObject,gOnMessage,js);
+                __android_log_print(ANDROID_LOG_INFO,TAG,"sec = %f",std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.);
+                __android_log_print(ANDROID_LOG_INFO,TAG,"bytes = %d",info.size_);
+                __android_log_print(ANDROID_LOG_INFO,TAG,"Bps = %f",(float)info.size_/(float)(std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.));
             }
         }
     }
