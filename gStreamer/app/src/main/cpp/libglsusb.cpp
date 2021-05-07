@@ -144,6 +144,16 @@ static int percent(float num,float denom)
     return (num/denom)*100;
 }
 
+static std::string fileOrder(int zeroBasedOrder,int totalFiles)
+{
+    std::string strOrder("[");
+    strOrder+= std::to_string(zeroBasedOrder+1);
+    strOrder+="/";
+    strOrder+=std::to_string(totalFiles);
+    strOrder+="] ";
+    return strOrder;
+}
+
 static void* readerThread(void *arg)
 {
     int r;
@@ -185,7 +195,7 @@ static void* readerThread(void *arg)
                 pFile = fopen(path,"w");
                 if(pFile) {
                     __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", path);
-                    jstring js = v.m_env->NewStringUTF((std::string("Receiving '")+std::string (info.name_)+std::string("'")).c_str());
+                    jstring js = v.m_env->NewStringUTF((fileOrder(info.index_,info.files_)+std::string("Receiving '")+std::string (info.name_)+std::string("'")).c_str());
                     v.m_env->CallVoidMethod(gObject,gOnMessage,js);
                     v.m_env->CallVoidMethod(gObject,gOnFileStartRecceivingCB,NULL);
                 }else
@@ -348,16 +358,6 @@ static void allFilesSent()
 
     jstring js = v.m_env->NewStringUTF("Terminating writer thread");
     v.m_env->CallVoidMethod(gObject,gOnAllFilesSentCB,js);
-}
-
-static std::string fileOrder(int zeroBasedOrder,int totalFiles)
-{
-    std::string strOrder("[");
-    strOrder+= std::to_string(zeroBasedOrder+1);
-    strOrder+="/";
-    strOrder+=std::to_string(totalFiles);
-    strOrder+="] ";
-    return strOrder;
 }
 
 static void* writerThread(void *arg) {
