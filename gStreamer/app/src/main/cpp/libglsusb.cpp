@@ -376,6 +376,11 @@ static std::string elapsedTime(std::chrono::nanoseconds ns)
     return commas(std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count()))+std::string(" ms");
 }
 
+static std::string Bps(unsigned int size,float sec)
+{
+    return commas(std::to_string((int)((float )size/sec)))+std::string(" Bps");
+}
+
 static void* writerThread(void *arg) {
     unsigned char ep = *((unsigned char*)arg);
     __android_log_print(ANDROID_LOG_INFO,TAG,"writerThread starts(ep:0x%x)...",ep);
@@ -401,7 +406,8 @@ static void* writerThread(void *arg) {
             auto start = std::chrono::high_resolution_clock::now();
             if(processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i))) {
                 auto stop = std::chrono::high_resolution_clock::now();
-                jstring js = v.m_env->NewStringUTF((std::string("elapsed :")+elapsedTime(stop-start)).c_str());
+                jstring js = v.m_env->NewStringUTF((std::string("elapsed :")+elapsedTime(stop-start)
+                        +" "+Bps(info.size_,std::chrono::duration_cast<std::chrono::seconds>(stop-start).count())).c_str());
                 v.m_env->CallVoidMethod(gObject,gOnMessage,js);
             }
         }
