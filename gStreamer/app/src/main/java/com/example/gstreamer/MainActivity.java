@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
                 //LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
-                LI(TAG,getRealPathFromURI(data.getData()));
+                //LI(TAG,getRealPathFromURI(data.getData()));
                 fileList.add(getRealPathFromURI(data.getData()));
             }
             if(fileList.size()>0) {
