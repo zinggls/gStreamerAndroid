@@ -203,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
 
                 int r = reader();
                 if(r==0) {
+                    pgFile.setVisibility(View.VISIBLE);
                     LI(TAG, "Reader starts successfully");
                 }else{
                     LI(TAG, "Reader failed to start, error=" + r);
@@ -358,6 +359,7 @@ public class MainActivity extends AppCompatActivity {
                                 btnCon.setEnabled(false);
                                 btnSnd.setEnabled(true);
                                 btnRcv.setEnabled(true);
+                                pgFile.setVisibility(View.INVISIBLE);
                             }else{
                                 LE(TAG, "Device open failure, error=" + r);
                             }
@@ -453,6 +455,7 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(true);
                 btnRcv.setEnabled(true);
+                pgFile.setVisibility(View.INVISIBLE);
                 LI(TAG,s);
             }
         });
