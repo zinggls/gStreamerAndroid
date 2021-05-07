@@ -373,12 +373,12 @@ static void allFilesSent()
 
 static std::string elapsedTime(std::chrono::nanoseconds ns)
 {
-    return commas(std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count()))+std::string(" ms");
+    return commas(std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count()))+std::string("ms");
 }
 
 static std::string Bps(unsigned int size,float sec)
 {
-    return commas(std::to_string((int)((float )size/sec)))+std::string(" Bps");
+    return commas(std::to_string((int)((float )size/sec)))+std::string("Bps");
 }
 
 static void* writerThread(void *arg) {
