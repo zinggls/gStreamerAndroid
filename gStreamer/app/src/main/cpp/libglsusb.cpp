@@ -253,8 +253,11 @@ static void* readerThread(void *arg)
                     v.m_env->CallVoidMethod(gObject,gOnMessage,js);
                     v.m_env->CallVoidMethod(gObject,gOnFileStartRecceivingCB,NULL);
                     gRcvWatch.start = std::chrono::high_resolution_clock::now();
-                }else
+                }else {
                     __android_log_print(ANDROID_LOG_INFO,TAG,"fopen(%s) failed, error=%s",path,strerror(errno));
+                    jstring js = v.m_env->NewStringUTF( ("write mode fopen("+std::string(path)+") error="+std::string(strerror(errno))).c_str());
+                    v.m_env->CallVoidMethod(gObject,gOnMessage,js);
+                }
             }else{
                 if(pFile) {
                     __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu received: %d",bytes,transferred);
@@ -346,8 +349,11 @@ static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
         pFile = fopen(filename.c_str(),"r");
         if(pFile) {
             __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", filename.c_str());
-        }else
+        }else {
             __android_log_print(ANDROID_LOG_ERROR,TAG,"fopen(%s) failed, error=%s",filename.c_str(),strerror(errno));
+            jstring js = v.m_env->NewStringUTF( ("read mode fopen("+filename+") error="+std::string(strerror(errno))).c_str());
+            v.m_env->CallVoidMethod(gObject,gOnMessage,js);
+        }
     }
 
     if(pFile) {
