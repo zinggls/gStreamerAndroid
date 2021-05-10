@@ -42,6 +42,18 @@ static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
 static StopWatch gRcvWatch;
 
+std::string KMG(unsigned int val)
+{
+    const int K = 1000;
+    char buf[32];
+    if(val>pow(K,3)) sprintf(buf,"%.1fG",float(val)/float(pow(K,3)));
+    else if(val>pow(K,2)) sprintf(buf,"%.1fM",float(val)/float(pow(K,2)));
+    else if(val>K) sprintf(buf,"%.1fK",float(val)/float(K));
+    else sprintf(buf,"%d",val);
+
+    return std::string(buf);
+}
+
 static std::string commas(std::string number)
 {
     int n = number.length()-3;
@@ -59,7 +71,7 @@ static std::string elapsedTime(std::chrono::nanoseconds ns)
 
 static std::string Bps(unsigned int size,float sec)
 {
-    return commas(std::to_string((int)((float )size/sec)))+std::string("Bps");
+    return KMG((float )size/sec)+std::string("Bps");
 }
 
 static std::string stripPath(std::string pathName)
