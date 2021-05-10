@@ -69,9 +69,19 @@ static std::string elapsedTime(std::chrono::nanoseconds ns)
     return commas(std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(ns).count()))+std::string("ms");
 }
 
+static float BpsVal(unsigned int size,float sec)
+{
+    return (float )size/sec;
+}
+
 static std::string Bps(unsigned int size,float sec)
 {
-    return KMG((float )size/sec)+std::string("Bps");
+    return KMG((unsigned int)BpsVal(size,sec))+std::string("Bps");
+}
+
+static std::string bps(unsigned int size, float sec)
+{
+    return KMG(8*(int)BpsVal(size,sec))+std::string("bps");
 }
 
 static std::string stripPath(std::string pathName)
@@ -177,8 +187,9 @@ static void onFileClose(FILE *pFile,FILEINFO *pInfo)
 
     jstring js = v.m_env->NewStringUTF(pInfo->name_);
     v.m_env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
+    float sec = std::chrono::duration_cast<std::chrono::milliseconds>(gRcvWatch.stop-gRcvWatch.start).count()/1000.;
     js = v.m_env->NewStringUTF((commas(std::to_string(pInfo->size_))+"Bytes "+elapsedTime(gRcvWatch.stop-gRcvWatch.start)
-                                        +" "+Bps(pInfo->size_,std::chrono::duration_cast<std::chrono::milliseconds>(gRcvWatch.stop-gRcvWatch.start).count()/1000.)).c_str());
+                                        +" "+Bps(pInfo->size_,sec)+"("+bps(pInfo->size_,sec)+")").c_str());
     v.m_env->CallVoidMethod(gObject,gOnMessage,js);
 }
 
@@ -429,8 +440,9 @@ static void* writerThread(void *arg) {
             auto start = std::chrono::high_resolution_clock::now();
             if(processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i))) {
                 auto stop = std::chrono::high_resolution_clock::now();
+                float sec = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.;
                 jstring js = v.m_env->NewStringUTF((commas(std::to_string(info.size_))+"Bytes "+elapsedTime(stop-start)
-                        +" "+Bps(info.size_,std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.)).c_str());
+                        +" "+Bps(info.size_,sec)+"("+bps(info.size_,sec)+")").c_str());
                 v.m_env->CallVoidMethod(gObject,gOnMessage,js);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"sec = %f",std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"bytes = %d",info.size_);
