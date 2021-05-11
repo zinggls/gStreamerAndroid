@@ -231,7 +231,7 @@ static void* readerThread(void *arg)
     memset(buf,'\0',BUF_SIZE);
     gCount = 0;
 
-    gBytes = 0;
+    size_t bytes = 0;
     FILEINFO info;
     FILE *pFile = 0;
     while(1){
@@ -241,7 +241,7 @@ static void* readerThread(void *arg)
             if(isInputEP(ep)&&syncFound(buf,sizeof(gSync))) {
                 __android_log_print(ANDROID_LOG_INFO,TAG,"InputEP(0x%x) Sync found",ep);
 
-                gBytes = 0;
+                bytes = 0;
                 memset(&info,0,sizeof(info));
                 getFileInfo(buf, transferred, sizeof(gSync), info);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"index:%d",info.index_);
@@ -267,25 +267,25 @@ static void* readerThread(void *arg)
                 }
             }else{
                 if(pFile) {
-                    __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu received: %d",gBytes,transferred);
-                    if(gBytes+transferred <= info.size_) {
+                    __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu received: %d",bytes,transferred);
+                    if(bytes+transferred <= info.size_) {
                         size_t szWrite = fwrite(buf,1,transferred,pFile);
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
                         assert(szWrite==transferred);
-                        gBytes += transferred;
-                        if(gBytes == info.size_) onFileClose(pFile,&info);
-                    }else if(gBytes+transferred > info.size_) {
-                        size_t szWrite = fwrite(buf,1,info.size_-gBytes,pFile);
-                        assert(szWrite==(info.size_-gBytes));
+                        bytes += transferred;
+                        if(bytes == info.size_) onFileClose(pFile,&info);
+                    }else if(bytes+transferred > info.size_) {
+                        size_t szWrite = fwrite(buf,1,info.size_-bytes,pFile);
+                        assert(szWrite==(info.size_-bytes));
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
-                        gBytes += (info.size_-gBytes);
-                        assert(gBytes==info.size_);
+                        bytes += (info.size_-bytes);
+                        assert(bytes==info.size_);
                         onFileClose(pFile,&info);
                     }
-                    __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",info.name_,gBytes,info.size_);
-                    v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(gBytes,info.size_));
+                    __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",info.name_,bytes,info.size_);
+                    v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,info.size_));
                 }else{
-                    gBytes += transferred;
+                    bytes += transferred;
                 }
             }
         }else{
@@ -374,12 +374,11 @@ static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
             return false;
         }
         gCount++;
-        gBytes += transferred;
         __android_log_print(ANDROID_LOG_INFO, TAG, "File Info sent %d bytes", BUF_SIZE);
     }
 
     size_t szRead;
-    gBytes = 0;
+    size_t bytes = 0;
     while(1){
         if(pFile) {
             szRead = fread(buf,1,bufSize,pFile);
@@ -394,11 +393,11 @@ static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
         if(r==0){
             gCount++;
             if(pFile) {
-                gBytes += szRead;
-                __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,gBytes,pInfo->size_);
-                v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(gBytes,pInfo->size_));
+                bytes += szRead;
+                __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,bytes,pInfo->size_);
+                v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,pInfo->size_));
             }else{
-                gBytes += transferred;
+                bytes += transferred;
             }
         }else{
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
