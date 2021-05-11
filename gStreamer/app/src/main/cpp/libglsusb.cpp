@@ -284,6 +284,8 @@ static void* readerThread(void *arg)
                     }
                     __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",info.name_,gBytes,info.size_);
                     v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(gBytes,info.size_));
+                }else{
+                    gBytes += transferred;
                 }
             }
         }else{
