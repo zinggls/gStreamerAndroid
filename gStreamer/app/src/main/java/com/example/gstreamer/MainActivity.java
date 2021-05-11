@@ -133,10 +133,6 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayList<Entry> values = new ArrayList<>();
         values.add(new Entry(0,0f));
-        //values.add(new Entry(100,1.06f));
-        //values.add(new Entry(200,0.364f));
-        //values.add(new Entry(300,1.56f));
-        //values.add(new Entry(400,1.86f));
 
         LineDataSet set1 = new LineDataSet(values,"bps");
         set1.setColor(Color.RED);
