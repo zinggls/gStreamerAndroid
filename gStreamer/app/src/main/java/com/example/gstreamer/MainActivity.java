@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         data.addEntry(new Entry((float)set.getEntryCount(),bpsVal),0);
         data.notifyDataChanged();
         chart.notifyDataSetChanged();
-        chart.setVisibleXRangeMaximum(150);
+        chart.setVisibleXRangeMaximum(50);
         chart.moveViewTo(data.getEntryCount(),50f, YAxis.AxisDependency.LEFT);
     }
 
