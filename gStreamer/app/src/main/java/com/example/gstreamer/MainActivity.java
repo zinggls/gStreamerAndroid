@@ -16,6 +16,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
@@ -37,11 +38,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.LargeValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -75,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
     public native int reader();
     public native long count();
     public native int writer(Object fileList);
+    public native int bps();
 
     private void createList()
     {
@@ -102,22 +113,74 @@ public class MainActivity extends AppCompatActivity {
         pgFile.setVisibility(View.INVISIBLE);
     }
 
+    public class YAxisFormatter extends ValueFormatter {
+        private DecimalFormat mFormat;
+        public YAxisFormatter() {
+            mFormat = new DecimalFormat("###,###,###0.0");
+        }
+
+        @Override
+        public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+            return mFormat.format(value)+"$";
+        }
+    }
+
     private void createChart()
     {
         chart = (LineChart)findViewById(R.id.LineChart);
-        ArrayList<Entry> values = new ArrayList<>();
-        values.add(new Entry(0,60f));
-        values.add(new Entry(1,50f));
-        values.add(new Entry(2,40f));
+        chart.getDescription().setEnabled(false);
 
-        LineDataSet set1 = new LineDataSet(values,"Set1");
-        set1.setFillAlpha(110);
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setDrawLabels(false);
+        xAxis.setDrawAxisLine(true);
+        xAxis.setDrawGridLines(true);
+
+        YAxis rightAxis = chart.getAxisRight();
+        rightAxis.setEnabled(false);
+
+        YAxis leftAxis = chart.getAxisLeft();
+        //leftAxis.setValueFormatter(new YAxisFormatter());
+
+        ArrayList<Entry> values = new ArrayList<>();
+        values.add(new Entry(0,0f));
+        //values.add(new Entry(100,1.06f));
+        //values.add(new Entry(200,0.364f));
+        //values.add(new Entry(300,1.56f));
+        //values.add(new Entry(400,1.86f));
+
+        LineDataSet set1 = new LineDataSet(values,"bps");
+        set1.setColor(Color.RED);
+        set1.setDrawCircles(false);
+        set1.setDrawValues(false);
 
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(set1);
 
         LineData data = new LineData(dataSets);
         chart.setData(data);
+    }
+
+    private LineDataSet createSet()
+    {
+        LineDataSet set = new LineDataSet(null,"bps");
+        //set.setFillAlpha(110);
+        return set;
+    }
+
+    private void addEntry(float bpsVal)
+    {
+        LineData data = chart.getData();
+        if(data==null) chart.setData(new LineData());
+
+        ILineDataSet set = data.getDataSetByIndex(0);
+        assert(set!=null);
+        //if(set==null) data.addDataSet(createSet());
+
+        data.addEntry(new Entry((float)set.getEntryCount(),bpsVal),0);
+        data.notifyDataChanged();
+        chart.notifyDataSetChanged();
+        chart.setVisibleXRangeMaximum(150);
+        chart.moveViewTo(data.getEntryCount(),50f, YAxis.AxisDependency.LEFT);
     }
 
     private boolean listDataAdd(String msg)
@@ -172,6 +235,12 @@ public class MainActivity extends AppCompatActivity {
                     Message msg = new Message();
                     msg.obj = Long.toString(count());
                     handler.sendMessage(msg);
+                    
+                    int bpsVal = bps();
+                    Log.i(TAG,"bps()="+bpsVal);
+                    float value = (float) (((float)bpsVal)/1000000000.0);
+                    Log.i(TAG,"v="+value);
+                    addEntry(value);
                 }
             }
         };

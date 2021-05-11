@@ -24,6 +24,11 @@ typedef struct{
     std::chrono::high_resolution_clock::time_point stop;
 }StopWatch;
 
+typedef struct{
+    size_t bytes;
+    std::chrono::high_resolution_clock::time_point now;
+}ByteSec;
+
 static libusb_device_handle *gDevh = NULL;
 static unsigned int gCount;
 static unsigned char gEpIN = 0x82;   //Input EP
@@ -42,6 +47,7 @@ static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
 static StopWatch gRcvWatch;
 static size_t gBytes;
+static ByteSec gPrev;
 
 std::string KMG(unsigned int val)
 {
@@ -546,6 +552,7 @@ Java_com_example_gstreamer_MainActivity_open
 
     gObject = env->NewGlobalRef(thiz);
     initFuncPointers(env);
+    memset(&gPrev,0,sizeof(ByteSec));
     return 0;
 }
 
@@ -600,6 +607,25 @@ Java_com_example_gstreamer_MainActivity_writer
 
     pthread_t tid;
     return pthread_create(&tid,NULL,writerThread,&gEpOut);
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_example_gstreamer_MainActivity_bps
+        (JNIEnv *, jobject)
+{
+    if(gPrev.bytes==0) gPrev.bytes = gBytes;
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    size_t bytes = gBytes;
+    float sec = std::chrono::duration_cast<std::chrono::milliseconds>(stop-gPrev.now).count()/1000.;
+
+    __android_log_print(ANDROID_LOG_INFO,TAG,"BytesDiff=%d Sec=%f",bytes-gPrev.bytes,sec);
+
+    int bps = 8*(int)BpsVal(bytes-gPrev.bytes,sec);
+
+    gPrev.now = stop;
+    gPrev.bytes = bytes;
+    return bps;
 }
 
 extern "C" jint
