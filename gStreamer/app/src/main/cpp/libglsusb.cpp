@@ -231,12 +231,14 @@ static void* readerThread(void *arg)
     memset(buf,'\0',BUF_SIZE);
     gCount = 0;
 
+    gBytes = 0;
     size_t bytes = 0;
     FILEINFO info;
     FILE *pFile = 0;
     while(1){
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
         if(r==0){
+            gBytes += transferred;
             __android_log_print(ANDROID_LOG_INFO, TAG, "%u %dbytes", ++gCount, transferred);
             if(isInputEP(ep)&&syncFound(buf,sizeof(gSync))) {
                 __android_log_print(ANDROID_LOG_INFO,TAG,"InputEP(0x%x) Sync found",ep);
@@ -374,6 +376,7 @@ static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
             return false;
         }
         gCount++;
+        gBytes += transferred;
         __android_log_print(ANDROID_LOG_INFO, TAG, "File Info sent %d bytes", BUF_SIZE);
     }
 
@@ -392,6 +395,7 @@ static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
         if(r==0){
             gCount++;
+            gBytes+= transferred;
             if(pFile) {
                 bytes += szRead;
                 __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,bytes,pInfo->size_);
@@ -445,6 +449,7 @@ static void* writerThread(void *arg) {
         __android_log_print(ANDROID_LOG_ERROR,TAG,"failed to attach to current thread");
     }
 
+    gBytes = 0;
     if(gFileList.size()==0) {
         processFile(ep,buf,BUF_SIZE,NULL,"");
     }else{
