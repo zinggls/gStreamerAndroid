@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Entry> values = new ArrayList<>();
         values.add(new Entry(0,0f));
 
-        LineDataSet set1 = new LineDataSet(values,"bps");
+        LineDataSet set1 = new LineDataSet(values,"Gbps");
         set1.setColor(Color.RED);
         set1.setDrawCircles(false);
         set1.setDrawValues(false);
