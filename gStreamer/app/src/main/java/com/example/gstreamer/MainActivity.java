@@ -113,18 +113,6 @@ public class MainActivity extends AppCompatActivity {
         pgFile.setVisibility(View.INVISIBLE);
     }
 
-    public class YAxisFormatter extends ValueFormatter {
-        private DecimalFormat mFormat;
-        public YAxisFormatter() {
-            mFormat = new DecimalFormat("###,###,###0.0");
-        }
-
-        @Override
-        public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-            return mFormat.format(value)+"$";
-        }
-    }
-
     private void createChart()
     {
         chart = (LineChart)findViewById(R.id.LineChart);
@@ -142,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
         leftAxis.setLabelCount(4);
         leftAxis.setAxisMinimum(0.0f);
         leftAxis.setAxisMaximum(2.0f);
-        //leftAxis.setValueFormatter(new YAxisFormatter());
 
         ArrayList<Entry> values = new ArrayList<>();
         values.add(new Entry(0,0f));
