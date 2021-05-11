@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
         LineData data = new LineData(dataSets);
         chart.setData(data);
+        chart.setVisibility(View.INVISIBLE);
     }
 
     private LineDataSet createSet()
@@ -235,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                     Message msg = new Message();
                     msg.obj = Long.toString(count());
                     handler.sendMessage(msg);
-                    
+
                     int bpsVal = bps();
                     Log.i(TAG,"bps()="+bpsVal);
                     float value = (float) (((float)bpsVal)/1000000000.0);
@@ -299,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
+                chart.setVisibility(View.VISIBLE);
                 LI(TAG, "Receive button clicked");
 
                 int r = reader();
@@ -316,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
+                chart.setVisibility(View.VISIBLE);
                 LI(TAG, "Send button clicked");
 
                 AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
