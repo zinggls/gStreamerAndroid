@@ -94,6 +94,14 @@ public class MainActivity extends AppCompatActivity {
         btnRcv.setEnabled(false);
     }
 
+    private void createProgressbar()
+    {
+        pgFile = (ProgressBar)findViewById(R.id.progressBarFile);
+        pgFile.setMax(100);
+        pgFile.setProgress(0);
+        pgFile.setVisibility(View.INVISIBLE);
+    }
+
     private void createChart()
     {
         chart = (LineChart)findViewById(R.id.LineChart);
@@ -142,10 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
         createButtons();
         createList();
-        pgFile = (ProgressBar)findViewById(R.id.progressBarFile);
-        pgFile.setMax(100);
-        pgFile.setProgress(0);
-        pgFile.setVisibility(View.INVISIBLE);
+        createProgressbar();
         createChart();
 
         handler = new Handler(){
