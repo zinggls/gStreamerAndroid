@@ -36,6 +36,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     List<String> listData;
     ArrayAdapter<String> listAdapter;
     private ProgressBar pgFile;
+    private LineChart chart;
 
     public native int open(int fileDescriptor);
     public native void close();
@@ -85,6 +92,24 @@ public class MainActivity extends AppCompatActivity {
         btnCon.setEnabled(true);
         btnSnd.setEnabled(false);
         btnRcv.setEnabled(false);
+    }
+
+    private void createChart()
+    {
+        chart = (LineChart)findViewById(R.id.LineChart);
+        ArrayList<Entry> values = new ArrayList<>();
+        values.add(new Entry(0,60f));
+        values.add(new Entry(1,50f));
+        values.add(new Entry(2,40f));
+
+        LineDataSet set1 = new LineDataSet(values,"Set1");
+        set1.setFillAlpha(110);
+
+        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
+        dataSets.add(set1);
+
+        LineData data = new LineData(dataSets);
+        chart.setData(data);
     }
 
     private boolean listDataAdd(String msg)
@@ -121,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
         pgFile.setMax(100);
         pgFile.setProgress(0);
         pgFile.setVisibility(View.INVISIBLE);
+        createChart();
 
         handler = new Handler(){
             @Override
