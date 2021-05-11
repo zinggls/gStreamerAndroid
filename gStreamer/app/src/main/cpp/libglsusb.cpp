@@ -396,6 +396,8 @@ static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
                 gBytes += szRead;
                 __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,gBytes,pInfo->size_);
                 v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(gBytes,pInfo->size_));
+            }else{
+                gBytes += transferred;
             }
         }else{
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
