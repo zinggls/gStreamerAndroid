@@ -374,6 +374,7 @@ static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO
             return false;
         }
         gCount++;
+        gBytes += transferred;
         __android_log_print(ANDROID_LOG_INFO, TAG, "File Info sent %d bytes", BUF_SIZE);
     }
 
