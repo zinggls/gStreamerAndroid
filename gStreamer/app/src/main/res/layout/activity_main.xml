@@ -16,6 +16,7 @@
             android:id="@+id/button_Connect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAllCaps="false"
             android:text="Connect" />
         <View android:layout_width="10dp"
             android:layout_height="0dp" />
@@ -23,6 +24,7 @@
             android:id="@+id/button_Send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAllCaps="false"
             android:text="Send" />
         <View android:layout_width="10dp"
             android:layout_height="0dp" />
@@ -30,6 +32,7 @@
             android:id="@+id/button_Recv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAllCaps="false"
             android:text="Recv" />
     </LinearLayout>
 
