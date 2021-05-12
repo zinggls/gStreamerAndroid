@@ -451,6 +451,7 @@ public class MainActivity extends AppCompatActivity {
                                 btnCon.setEnabled(false);
                                 btnSnd.setEnabled(true);
                                 btnRcv.setEnabled(true);
+                                btnCon.setText("Connected");
                                 pgFile.setVisibility(View.INVISIBLE);
                             }else{
                                 LE(TAG, "Device open failure, error=" + r);
