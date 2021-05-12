@@ -286,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
+                btnRcv.setText("Receiving");
                 chart.setVisibility(View.VISIBLE);
                 LI(TAG, "Receive button clicked");
 
@@ -304,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
+                btnSnd.setText("Sending");
                 chart.setVisibility(View.VISIBLE);
                 LI(TAG, "Send button clicked");
 
@@ -557,6 +559,7 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(true);
                 btnRcv.setEnabled(true);
+                btnSnd.setText("Send");
                 pgFile.setVisibility(View.INVISIBLE);
                 LI(TAG,s);
             }
