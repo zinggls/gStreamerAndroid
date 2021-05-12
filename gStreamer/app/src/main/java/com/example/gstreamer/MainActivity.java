@@ -367,6 +367,8 @@ public class MainActivity extends AppCompatActivity {
             return contentUri.getPath();
         }
         String id = DocumentsContract.getDocumentId(contentUri).split(":")[1];
+        if (id.startsWith("/storage")) return id;
+
         String[] columns = { MediaStore.Files.FileColumns.DATA };
         String selection = MediaStore.Files.FileColumns._ID + " = " + id;
         Cursor cursor = getContentResolver().query(MediaStore.Files.getContentUri("external"), columns, selection, null, null);
