@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         data.notifyDataChanged();
         chart.notifyDataSetChanged();
         chart.setVisibleXRangeMaximum(50);
-        chart.moveViewTo(data.getEntryCount(),50f, YAxis.AxisDependency.LEFT);
+        chart.moveViewTo(data.getEntryCount(),0f, YAxis.AxisDependency.LEFT);
     }
 
     private boolean listDataAdd(String msg)
