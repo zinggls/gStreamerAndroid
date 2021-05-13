@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnCon;
     private Button btnSnd;
     private Button btnRcv;
+    private boolean receiveBtn=false;
     private static final String TAG = "glsusb";
     private static final String ACTION_USB_PERMISSION = "com.example.usbHandle.USB_PERMISSION";
     private UsbManager usbManager;
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
     public native int open(int fileDescriptor);
     public native void close();
     public native int reader();
+    public native int stopReader();
     public native long count();
     public native int writer(Object fileList);
     public native int bps();
@@ -285,17 +287,26 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(false);
-                btnRcv.setEnabled(false);
-                btnRcv.setText("Receiving");
+                btnRcv.setEnabled(true);
                 chart.setVisibility(View.VISIBLE);
                 LI(TAG, "Receive button clicked");
 
-                int r = reader();
-                if(r==0) {
-                    LI(TAG, "Reader starts successfully");
+                int r;
+                if(receiveBtn){
+                    btnSnd.setEnabled(true);
+                    btnRcv.setText("Recv");
+                    stopReader();
+                    LI(TAG, "Reader stopped");
                 }else{
-                    LI(TAG, "Reader failed to start, error=" + r);
+                    btnSnd.setEnabled(false);
+                    btnRcv.setText("StopRecv");
+                    if((r=reader())==0) {
+                        LI(TAG, "Reader starts successfully");
+                    }else{
+                        LI(TAG, "Reader failed to start, error=" + r);
+                    }
                 }
+                receiveBtn = !receiveBtn;
             }
         });
 

@@ -48,6 +48,8 @@ static std::vector<std::string> gFileList;
 static StopWatch gRcvWatch;
 static size_t gBytes;
 static ByteSec gPrev;
+static bool gReceive;
+static pthread_t gReaderTid;
 
 std::string KMG(unsigned int val)
 {
@@ -235,8 +237,8 @@ static void* readerThread(void *arg)
     size_t bytes = 0;
     FILEINFO info;
     FILE *pFile = 0;
-    while(1){
-        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
+    while(gReceive){
+        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 1000);
         if(r==0){
             gBytes += transferred;
             __android_log_print(ANDROID_LOG_INFO, TAG, "%u %dbytes", ++gCount, transferred);
@@ -295,14 +297,11 @@ static void* readerThread(void *arg)
                 }
             }
         }else{
-            delete [] buf;
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
-            goto cleanup;
         }
     }
-
-cleanup:
-    return NULL;
+    delete [] buf;
+    return ((void*)0);
 }
 
 static void convertNameFromAsciiToUnicode(unsigned char *buffer, int bufferSize, char *targetName)
@@ -583,8 +582,19 @@ Java_com_example_gstreamer_MainActivity_reader
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"reader starts");
 
-    pthread_t tid;
-    return pthread_create(&tid, NULL, readerThread, &gEpIN);
+    gReceive = true;
+    return pthread_create(&gReaderTid, NULL, readerThread, &gEpIN);
+}
+
+extern "C" JNIEXPORT jint JNICALL
+        Java_com_example_gstreamer_MainActivity_stopReader
+        (JNIEnv *env, jobject thiz)
+{
+    __android_log_print(ANDROID_LOG_INFO,TAG,"stopReader starts");
+
+    void *result;
+    gReceive = false;
+    return pthread_join(gReaderTid,&result);
 }
 
 extern "C" JNIEXPORT jlong JNICALL
