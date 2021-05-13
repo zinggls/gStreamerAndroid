@@ -365,7 +365,7 @@ static void send(unsigned char ep,unsigned char *buf,int bufSize)
     size_t szRead;
     size_t bytes = 0;
     while(1){
-        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
+        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, TIMEOUT);
         if(r==0){
             gCount++;
             gBytes+= transferred;
