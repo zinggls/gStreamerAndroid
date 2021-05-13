@@ -632,7 +632,7 @@ Java_com_example_gstreamer_MainActivity_bps
     size_t bytes = gBytes;
     float sec = std::chrono::duration_cast<std::chrono::milliseconds>(stop-gPrev.now).count()/1000.;
 
-    __android_log_print(ANDROID_LOG_INFO,TAG,"BytesDiff=%d Sec=%f",bytes-gPrev.bytes,sec);
+    //__android_log_print(ANDROID_LOG_INFO,TAG,"BytesDiff=%d Sec=%f",bytes-gPrev.bytes,sec);
 
     int bps = 8*(int)BpsVal(bytes-gPrev.bytes,sec);
 

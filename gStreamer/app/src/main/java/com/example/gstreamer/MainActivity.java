@@ -224,9 +224,9 @@ public class MainActivity extends AppCompatActivity {
                     handler.sendMessage(msg);
 
                     int bpsVal = bps();
-                    Log.i(TAG,"bps()="+bpsVal);
+                    //Log.i(TAG,"bps()="+bpsVal);
                     float value = (float) (((float)bpsVal)/1000000000.0);
-                    Log.i(TAG,"v="+value);
+                    //Log.i(TAG,"v="+value);
                     addEntry(value);
                 }
             }
