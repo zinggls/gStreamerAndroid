@@ -12,6 +12,7 @@
 
 #define TAG "glsusb"
 #define BUF_SIZE    (8192*8*4)
+#define TIMEOUT     1000
 
 typedef enum{
     NOT_DEF=-1,
@@ -238,7 +239,7 @@ static void* readerThread(void *arg)
     FILEINFO info;
     FILE *pFile = 0;
     while(gReceive){
-        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 1000);
+        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, TIMEOUT);
         if(r==0){
             gBytes += transferred;
             __android_log_print(ANDROID_LOG_INFO, TAG, "%u %dbytes", ++gCount, transferred);
