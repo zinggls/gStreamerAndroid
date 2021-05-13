@@ -290,7 +290,6 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(true);
-                chart.setVisibility(View.VISIBLE);
                 LI(TAG, "Receive button clicked");
 
                 int r;
@@ -329,7 +328,6 @@ public class MainActivity extends AppCompatActivity {
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
                 btnSnd.setText("Sending");
-                chart.setVisibility(View.VISIBLE);
                 LI(TAG, "Send button clicked");
 
                 AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
@@ -481,6 +479,7 @@ public class MainActivity extends AppCompatActivity {
                                 btnSnd.setEnabled(true);
                                 btnRcv.setEnabled(true);
                                 btnCon.setText("Connected");
+                                chart.setVisibility(View.VISIBLE);
                                 pgFile.setVisibility(View.INVISIBLE);
                             }else{
                                 LE(TAG, "Device open failure, error=" + r);
