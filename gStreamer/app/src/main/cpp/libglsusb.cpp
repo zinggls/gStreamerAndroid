@@ -30,6 +30,11 @@ typedef struct{
     std::chrono::high_resolution_clock::time_point now;
 }ByteSec;
 
+typedef struct{
+    bool run;
+    pthread_t id;
+} Thread;
+
 static libusb_device_handle *gDevh = NULL;
 static unsigned int gCount;
 static unsigned char gEpIN = 0x82;   //Input EP
@@ -49,8 +54,7 @@ static std::vector<std::string> gFileList;
 static StopWatch gRcvWatch;
 static size_t gBytes;
 static ByteSec gPrev;
-static bool gReceive;
-static pthread_t gReaderTid;
+static Thread gRcv;
 
 std::string KMG(unsigned int val)
 {
@@ -238,7 +242,7 @@ static void* readerThread(void *arg)
     size_t bytes = 0;
     FILEINFO info;
     FILE *pFile = 0;
-    while(gReceive){
+    while(gRcv.run){
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, TIMEOUT);
         if(r==0){
             gBytes += transferred;
@@ -597,8 +601,8 @@ Java_com_example_gstreamer_MainActivity_reader
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"reader starts");
 
-    gReceive = true;
-    return pthread_create(&gReaderTid, NULL, readerThread, &gEpIN);
+    gRcv.run = true;
+    return pthread_create(&gRcv.id, NULL, readerThread, &gEpIN);
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -608,8 +612,8 @@ extern "C" JNIEXPORT jint JNICALL
     __android_log_print(ANDROID_LOG_INFO,TAG,"stopReader starts");
 
     void *result;
-    gReceive = false;
-    return pthread_join(gReaderTid,&result);
+    gRcv.run = false;
+    return pthread_join(gRcv.id,&result);
 }
 
 extern "C" JNIEXPORT jlong JNICALL
