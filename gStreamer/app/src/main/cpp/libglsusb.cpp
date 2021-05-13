@@ -54,7 +54,7 @@ static std::vector<std::string> gFileList;
 static StopWatch gRcvWatch;
 static size_t gBytes;
 static ByteSec gPrev;
-static Thread gRcv;
+static Thread gRcv,gSnd;
 
 std::string KMG(unsigned int val)
 {
@@ -364,7 +364,7 @@ static void send(unsigned char ep,unsigned char *buf,int bufSize)
 
     size_t szRead;
     size_t bytes = 0;
-    while(1){
+    while(gSnd.run){
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, TIMEOUT);
         if(r==0){
             gCount++;
@@ -473,6 +473,7 @@ static void* writerThread(void *arg) {
     gBytes = 0;
     if(gFileList.size()==0) {
         send(ep,buf,BUF_SIZE);
+        return ((void*)0);
     }else{
         FILEINFO info;
         for(unsigned int i=0;i<gFileList.size();i++) {
@@ -496,7 +497,7 @@ static void* writerThread(void *arg) {
     }
     delete [] buf;
     allFilesSent();
-    return NULL;
+    return ((void*)0);
 }
 
 static void getMethodLog(jmethodID m, const char *funcName)
@@ -645,9 +646,19 @@ Java_com_example_gstreamer_MainActivity_writer
         __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%d",gFileList.size());
         for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
     }
+    gSnd.run = true;
+    return pthread_create(&gSnd.id,NULL,writerThread,&gEpOut);
+}
 
-    pthread_t tid;
-    return pthread_create(&tid,NULL,writerThread,&gEpOut);
+extern "C" JNIEXPORT jint JNICALL
+Java_com_example_gstreamer_MainActivity_stopWriter
+        (JNIEnv *env, jobject thiz)
+{
+    __android_log_print(ANDROID_LOG_INFO,TAG,"stopWriter starts");
+
+    void *result;
+    gSnd.run = false;
+    return pthread_join(gSnd.id,&result);
 }
 
 extern "C" JNIEXPORT jint JNICALL

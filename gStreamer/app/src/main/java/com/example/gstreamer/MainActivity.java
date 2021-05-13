@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnSnd;
     private Button btnRcv;
     private boolean receiveBtn=false;
+    private boolean selfSndBtn=false;
     private static final String TAG = "glsusb";
     private static final String ACTION_USB_PERMISSION = "com.example.usbHandle.USB_PERMISSION";
     private UsbManager usbManager;
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     public native int stopReader();
     public native long count();
     public native int writer(Object fileList);
+    public native int stopWriter();
     public native int bps();
 
     private void createList()
@@ -313,6 +315,16 @@ public class MainActivity extends AppCompatActivity {
         btnSnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(selfSndBtn) {
+                    //TODO
+                    stopWriter();
+                    btnSnd.setEnabled(true);
+                    btnRcv.setEnabled(true);
+                    btnSnd.setText("Send");
+                    LI(TAG, "Writer stopped");
+                    selfSndBtn = !selfSndBtn;
+                    return;
+                }
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
@@ -341,14 +353,20 @@ public class MainActivity extends AppCompatActivity {
                 ad.setNegativeButton("Self mode", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        LI(TAG, "Self mode selected");
-                        int r = writer(null);
-                        if(r==0) {
-                            LI(TAG, "Writer starts successfully");
-                        }else{
-                            LE(TAG, "Writer failed to start, error=" + r);
+                        if(!selfSndBtn){
+                            btnSnd.setEnabled(true);
+                            btnRcv.setEnabled(false);
+                            btnSnd.setText("StopSend");
+                            LI(TAG, "Self mode selected");
+                            int r = writer(null);
+                            if(r==0) {
+                                LI(TAG, "Writer starts successfully");
+                            }else{
+                                LE(TAG, "Writer failed to start, error=" + r);
+                            }
+                            dialog.dismiss();
                         }
-                        dialog.dismiss();
+                        selfSndBtn = !selfSndBtn;
                     }
                 });
                 ad.show();
