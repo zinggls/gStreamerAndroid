@@ -350,63 +350,77 @@ static void onFileSent(FILE *pFile,const char *pFileName)
     v.m_env->CallVoidMethod(gObject,gOnFileSentCB,js);
 }
 
-static bool processFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,std::string filename)
+static bool send(unsigned char ep,unsigned char *buf,int bufSize)
 {
-    __android_log_print(ANDROID_LOG_INFO,TAG,"processFile ep=0x%x filename=%s",ep,filename.c_str());
     int r,transferred=0;
     gCount = 0;
 
     JavaVm v(gJavaVM);
     assert(v.getEnv(JNI_VERSION_1_4));
 
-    FILE *pFile = NULL;
-    if(!filename.empty()) {
-        pFile = fopen(filename.c_str(),"r");
-        if(pFile) {
-            __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", filename.c_str());
-        }else {
-            __android_log_print(ANDROID_LOG_ERROR,TAG,"fopen(%s) failed, error=%s",filename.c_str(),strerror(errno));
-            jstring js = v.m_env->NewStringUTF( ("read mode fopen("+filename+") error="+std::string(strerror(errno))).c_str());
-            v.m_env->CallVoidMethod(gObject,gOnMessage,js);
-        }
-    }
-
-    if(pFile) {
-        //Send FILEINFO first
-        int r = SetFileInfo(buf,bufSize,gSync,sizeof(gSync),*pInfo);
-        __android_log_print(ANDROID_LOG_INFO, TAG, "SetFileInfo %d bytes", r);
-        if((r=libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0))!=0) {
-            __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
-            return false;
-        }
-        gCount++;
-        gBytes += transferred;
-        __android_log_print(ANDROID_LOG_INFO, TAG, "File Info sent %d bytes", BUF_SIZE);
-    }
-
     size_t szRead;
     size_t bytes = 0;
     while(1){
-        if(pFile) {
-            szRead = fread(buf,1,bufSize,pFile);
-            if(szRead==0) {
-                assert(feof(pFile));
-                __android_log_print(ANDROID_LOG_ERROR,TAG,"fread=%d",szRead);
-                onFileSent(pFile,filename.c_str());
-                return true;
-            }
-        }
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
         if(r==0){
             gCount++;
             gBytes+= transferred;
-            if(pFile) {
-                bytes += szRead;
-                __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,bytes,pInfo->size_);
-                v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,pInfo->size_));
-            }else{
-                bytes += transferred;
-            }
+        }else{
+            __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
+            return false;
+        }
+    }
+}
+
+static bool sendFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,std::string filename)
+{
+    __android_log_print(ANDROID_LOG_INFO,TAG,"sendFile ep=0x%x filename=%s",ep,filename.c_str());
+    int r,transferred=0;
+    gCount = 0;
+
+    JavaVm v(gJavaVM);
+    assert(v.getEnv(JNI_VERSION_1_4));
+    assert(filename.empty()==false);
+
+    FILE *pFile = fopen(filename.c_str(),"r");
+    if(pFile) {
+        __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", filename.c_str());
+    }else {
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"fopen(%s) failed, error=%s",filename.c_str(),strerror(errno));
+        jstring js = v.m_env->NewStringUTF( ("read mode fopen("+filename+") error="+std::string(strerror(errno))).c_str());
+        v.m_env->CallVoidMethod(gObject,gOnMessage,js);
+        return false;
+    }
+
+    //Send FILEINFO first
+    r = SetFileInfo(buf,bufSize,gSync,sizeof(gSync),*pInfo);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "SetFileInfo %d bytes", r);
+    if((r=libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0))!=0) {
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
+        return false;
+    }
+    gCount++;
+    gBytes += transferred;
+    __android_log_print(ANDROID_LOG_INFO, TAG, "File Info sent %d bytes", BUF_SIZE);
+
+    size_t szRead;
+    size_t bytes = 0;
+    while(1){
+        szRead = fread(buf,1,bufSize,pFile);
+        if(szRead==0) {
+            assert(feof(pFile));
+            __android_log_print(ANDROID_LOG_ERROR,TAG,"fread=%d",szRead);
+            onFileSent(pFile,filename.c_str());
+            return true;
+        }
+
+        r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, 0);
+        if(r==0){
+            gCount++;
+            gBytes+= transferred;
+            bytes += szRead;
+            __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,bytes,pInfo->size_);
+            v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,pInfo->size_));
         }else{
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
             return false;
@@ -455,7 +469,7 @@ static void* writerThread(void *arg) {
 
     gBytes = 0;
     if(gFileList.size()==0) {
-        processFile(ep,buf,BUF_SIZE,NULL,"");
+        send(ep,buf,BUF_SIZE);
     }else{
         FILEINFO info;
         for(unsigned int i=0;i<gFileList.size();i++) {
@@ -465,7 +479,7 @@ static void* writerThread(void *arg) {
             v.m_env->CallVoidMethod(gObject,gOnMessage,js);
 
             auto start = std::chrono::high_resolution_clock::now();
-            if(processFile(ep,buf,BUF_SIZE,&info,gFileList.at(i))) {
+            if(sendFile(ep,buf,BUF_SIZE,&info,gFileList.at(i))) {
                 auto stop = std::chrono::high_resolution_clock::now();
                 float sec = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count()/1000.;
                 jstring js = v.m_env->NewStringUTF((commas(std::to_string(info.size_))+"Bytes "+elapsedTime(stop-start)
