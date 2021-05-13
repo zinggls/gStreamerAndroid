@@ -131,9 +131,9 @@ public class MainActivity extends AppCompatActivity {
         rightAxis.setEnabled(false);
 
         YAxis leftAxis = chart.getAxisLeft();
-        leftAxis.setLabelCount(4);
+        leftAxis.setLabelCount(5);
         leftAxis.setAxisMinimum(0.0f);
-        leftAxis.setAxisMaximum(2.0f);
+        leftAxis.setAxisMaximum(2.5f);
 
         ArrayList<Entry> values = new ArrayList<>();
         values.add(new Entry(0,0f));
