@@ -354,7 +354,7 @@ static void onFileSent(FILE *pFile,const char *pFileName)
     v.m_env->CallVoidMethod(gObject,gOnFileSentCB,js);
 }
 
-static bool send(unsigned char ep,unsigned char *buf,int bufSize)
+static void send(unsigned char ep,unsigned char *buf,int bufSize)
 {
     int r,transferred=0;
     gCount = 0;
@@ -371,7 +371,6 @@ static bool send(unsigned char ep,unsigned char *buf,int bufSize)
             gBytes+= transferred;
         }else{
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
-            return false;
         }
     }
 }
