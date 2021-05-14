@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -206,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
         createProgressbar();
         createChart();
 
-        handler = new Handler(){
+        handler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(Message msg){
                 ((TextView)findViewById(R.id.tvHello)).setText("count:"+msg.obj);
