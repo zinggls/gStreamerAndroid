@@ -412,7 +412,7 @@ static bool sendFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *p
         szRead = fread(buf,1,bufSize,pFile);
         if(szRead==0) {
             assert(feof(pFile));
-            __android_log_print(ANDROID_LOG_ERROR,TAG,"fread=%d",szRead);
+            __android_log_print(ANDROID_LOG_ERROR,TAG,"fread=%zu",szRead);
             onFileSent(pFile,filename.c_str());
             return true;
         }
@@ -643,7 +643,7 @@ Java_com_example_gstreamer_MainActivity_writer
             env->ReleaseStringUTFChars(element, pchars);
             env->DeleteLocalRef(element);
         }
-        __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%d",gFileList.size());
+        __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%lu",gFileList.size());
         for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
     }
     gSnd.run = true;
@@ -690,7 +690,7 @@ JNI_OnLoad(JavaVM* vm, void* reserved)
         return JNI_ERR;
     }
     gJavaVM = vm;
-    __android_log_print(ANDROID_LOG_INFO,TAG,"JNI_OnLoad end, JNIEnv=0x%x",env);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"JNI_OnLoad end, JNIEnv=0x%p",env);
     return JNI_VERSION_1_6;
 }
 
