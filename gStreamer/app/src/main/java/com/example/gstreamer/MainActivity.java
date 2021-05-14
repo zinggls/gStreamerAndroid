@@ -512,6 +512,27 @@ public class MainActivity extends AppCompatActivity {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
+    private String getRealPathFromURI(Uri contentUri) {
+        if (contentUri.getPath().startsWith("/storage")) {
+            return contentUri.getPath();
+        }
+        String id = DocumentsContract.getDocumentId(contentUri).split(":")[1];
+        if (id.startsWith("/storage")) return id;
+
+        String[] columns = { MediaStore.Files.FileColumns.DATA };
+        String selection = MediaStore.Files.FileColumns._ID + " = " + id;
+        Cursor cursor = getContentResolver().query(MediaStore.Files.getContentUri("external"), columns, selection, null, null);
+        try {
+            int columnIndex = cursor.getColumnIndex(columns[0]);
+            if (cursor.moveToFirst()) {
+                return cursor.getString(columnIndex);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -525,11 +546,11 @@ public class MainActivity extends AppCompatActivity {
                 for(int i=0;i<clip.getItemCount();i++) {
                     ClipData.Item item = clip.getItemAt(i);
                     Uri uri = item.getUri();
-                    fileList.add(getPath(this,uri));
+                    fileList.add(getRealPathFromURI(uri));
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
-                fileList.add(getPath(this,data.getData()));
+                fileList.add(getRealPathFromURI(data.getData()));
             }
             if(fileList.size()>0) {
                 int r = writer(fileList);
