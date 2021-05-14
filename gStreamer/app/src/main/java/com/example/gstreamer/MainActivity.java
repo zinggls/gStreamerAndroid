@@ -383,37 +383,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private String getFileNameFromUri(Uri uri) {
-        String fileName = "";
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst())
-            fileName = cursor.getString( cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-
-        cursor.close();
-        return fileName;
-    }
-
-    private String getRealPathFromURI(Uri contentUri) {
-        if (contentUri.getPath().startsWith("/storage")) {
-            return contentUri.getPath();
-        }
-        String id = DocumentsContract.getDocumentId(contentUri).split(":")[1];
-        if (id.startsWith("/storage")) return id;
-
-        String[] columns = { MediaStore.Files.FileColumns.DATA };
-        String selection = MediaStore.Files.FileColumns._ID + " = " + id;
-        Cursor cursor = getContentResolver().query(MediaStore.Files.getContentUri("external"), columns, selection, null, null);
-        try {
-            int columnIndex = cursor.getColumnIndex(columns[0]);
-            if (cursor.moveToFirst()) {
-                return cursor.getString(columnIndex);
-            }
-        } finally {
-            cursor.close();
-        }
-        return null;
-    }
-
     /**
      * Get a file path from a Uri. This will get the the path for Storage Access
      * Framework Documents, as well as the _data field for the MediaStore and
@@ -556,17 +525,10 @@ public class MainActivity extends AppCompatActivity {
                 for(int i=0;i<clip.getItemCount();i++) {
                     ClipData.Item item = clip.getItemAt(i);
                     Uri uri = item.getUri();
-
-                    //Log.i(TAG,"Path: " + uri.getPath());
-                    //Log.i(TAG,"URI: " + uri.toString());
-                    //LI(TAG,"File Name: " + getFileNameFromUri(uri));
-                    //LI(TAG, getRealPathFromURI(uri));
                     fileList.add(getPath(this,uri));
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
-                //LI(TAG,"File Name: " + getFileNameFromUri(data.getData()));
-                //LI(TAG,getRealPathFromURI(data.getData()));
                 fileList.add(getPath(this,data.getData()));
             }
             if(fileList.size()>0) {
