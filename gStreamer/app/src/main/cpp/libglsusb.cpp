@@ -302,7 +302,7 @@ static void* readerThread(void *arg)
                 }
             }
         }else{
-            __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
+            //__android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
         }
     }
     delete [] buf;
