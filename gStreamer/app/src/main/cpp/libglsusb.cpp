@@ -163,22 +163,44 @@ static void convertNameFromUnicodeToAscii(unsigned char *buffer, int bufferSize,
     for(int j=0;j<bufferSize;j+=2) targetName[i++] = buffer[j];
 }
 
-static int convertNameSizeFromUnicodeToAscii(unsigned char *buffer)
+static int nameSize(unsigned char *buffer)
 {
-    int unicodeSize;
-    memcpy(&unicodeSize, buffer, sizeof(int));
-    return unicodeSize/2;
+    int windowsUnicodeSize;
+    memcpy(&windowsUnicodeSize, buffer, sizeof(int));
+    return windowsUnicodeSize;
+}
+
+static wchar_t toLinUnicode(unsigned char uc1,unsigned char uc2)
+{
+    return (uc2<<8)|uc1;
+}
+
+static std::wstring buf2wstr(unsigned char *buf,unsigned int bufSize)
+{
+    std::wstring s;
+    for(int i=0;i<bufSize;i+=2) s.append(1,toLinUnicode(buf[i],buf[i+1]));
+    return s;
+}
+
+static unsigned int wstr2buf(std::wstring s,unsigned char *buf,unsigned int bufSize)
+{
+    assert(2*s.length()<=bufSize);
+    for(size_t i=0;i<s.length();i++) {
+        buf[2*i] = s[i]&0xff;
+        buf[2*i+1] = (s[i]&0xff00)>>8;
+    }
+    return 2*s.length();
 }
 
 static int getFileInfo(unsigned char *buffer, int bufferSize, int syncSize, FILEINFO &info)
 {
     int nOffset = syncSize;
-    memset(info.name_, 0, sizeof(FILEINFO::name_));
+    info.name_.clear();
     memcpy(&info.index_, buffer + nOffset, sizeof(int)); nOffset += sizeof(int);
     memcpy(&info.files_, buffer + nOffset, sizeof(int)); nOffset += sizeof(int);
 
-    info.nameSize_ = convertNameSizeFromUnicodeToAscii(buffer + nOffset); nOffset += sizeof(int);
-    convertNameFromUnicodeToAscii(buffer + nOffset, 2*info.nameSize_, info.name_); nOffset += 2*info.nameSize_;
+    int size = nameSize(buffer + nOffset); nOffset += sizeof(int);
+    info.name_ = buf2wstr(buffer+nOffset,size); nOffset += size;
 
     memcpy(&info.size_, buffer + nOffset, sizeof(unsigned int)); nOffset += sizeof(unsigned int);
 
@@ -199,7 +221,7 @@ static void onFileClose(FILE *pFile,FILEINFO *pInfo)
         return;
     }
 
-    jstring js = v.m_env->NewStringUTF(pInfo->name_);
+    jstring js = v.m_env->NewString(reinterpret_cast<const jchar *>(pInfo->name_.c_str()),pInfo->name_.length());
     v.m_env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
     float sec = std::chrono::duration_cast<std::chrono::milliseconds>(gRcvWatch.stop-gRcvWatch.start).count()/1000.;
     js = v.m_env->NewStringUTF((commas(std::to_string(pInfo->size_))+"Bytes "+elapsedTime(gRcvWatch.stop-gRcvWatch.start)
@@ -255,17 +277,27 @@ static void* readerThread(void *arg)
                 getFileInfo(buf, transferred, sizeof(gSync), info);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"index:%d",info.index_);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"files:%d",info.files_);
-                __android_log_print(ANDROID_LOG_INFO,TAG,"nameSize:%d",info.nameSize_);
-                __android_log_print(ANDROID_LOG_INFO,TAG,"%s",info.name_);
+                __android_log_print(ANDROID_LOG_INFO,TAG,"nameSize:%d",info.name_.size());
+                __android_log_print(ANDROID_LOG_INFO,TAG,"%S",info.name_.c_str());
                 __android_log_print(ANDROID_LOG_INFO,TAG,"size:%u",info.size_);
 
                 char path[512];
-                sprintf(path,"/sdcard/download/%s",info.name_);
+                sprintf(path,"/sdcard/download/%S",info.name_.c_str());
                 __android_log_print(ANDROID_LOG_INFO,TAG,"file path:%s",path);
                 pFile = fopen(path,"w");
                 if(pFile) {
                     __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", path);
-                    jstring js = v.m_env->NewStringUTF((fileOrder(info.index_,info.files_)+std::string("Receiving '")+std::string (info.name_)+std::string("'")).c_str());
+                    std::wstring ws;
+                    std::string s = fileOrder(info.index_,info.files_)+std::string("Receiving '");
+                    ws.assign(s.begin(),s.end());
+                    ws += info.name_;
+
+                    s = std::string("'");
+                    std::wstring wsTmp;
+                    wsTmp.assign(s.begin(),s.end());
+                    ws += wsTmp;
+
+                    jstring js = v.m_env->NewString(reinterpret_cast<const jchar *>(ws.c_str()),2*ws.length());
                     v.m_env->CallVoidMethod(gObject,gOnMessage,js);
                     v.m_env->CallVoidMethod(gObject,gOnFileStartRecceivingCB,NULL);
                     gRcvWatch.start = std::chrono::high_resolution_clock::now();
@@ -295,7 +327,7 @@ static void* readerThread(void *arg)
                         onFileClose(pFile,&info);
                         pFile = NULL;
                     }
-                    __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",info.name_,bytes,info.size_);
+                    __android_log_print(ANDROID_LOG_INFO,TAG,"file:%S bytes/Total= %zu/%u",info.name_.c_str(),bytes,info.size_);
                     v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,info.size_));
                 }else{
                     bytes += transferred;
@@ -326,9 +358,9 @@ static int SetFileInfo(unsigned char *buf, int bufSize, unsigned  char *sync, in
     memcpy(buf + nOffset, &info.index_, sizeof(int)); nOffset += sizeof(int);
     memcpy(buf + nOffset, &info.files_, sizeof(int)); nOffset += sizeof(int);
 
-    int modifiedSize = info.nameSize_*2;
+    int modifiedSize = info.name_.length()*2;
     memcpy(buf + nOffset, &modifiedSize, sizeof(int)); nOffset += sizeof(int);
-    convertNameFromAsciiToUnicode(reinterpret_cast<unsigned char *>(info.name_), info.nameSize_, reinterpret_cast<char *>(buf + nOffset));
+    wstr2buf(info.name_,buf + nOffset,modifiedSize);
     nOffset+= modifiedSize;
 
     memcpy(buf + nOffset, &info.size_, sizeof(unsigned int)); nOffset += sizeof(unsigned int);
@@ -422,7 +454,7 @@ static bool sendFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *p
             gCount++;
             gBytes+= transferred;
             bytes += szRead;
-            __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s bytes/Total= %zu/%u",pInfo->name_,bytes,pInfo->size_);
+            __android_log_print(ANDROID_LOG_INFO,TAG,"file:%S bytes/Total= %zu/%u",pInfo->name_.c_str(),bytes,pInfo->size_);
             v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,pInfo->size_));
         }else{
             __android_log_print(ANDROID_LOG_ERROR,TAG,"libusb_bulk_transfer=%d",r);
@@ -436,9 +468,7 @@ static void FileInfo(FILEINFO &info,int files,int index,std::string name)
     std::string strippedName = stripPath(name);
     info.files_ = files;
     info.index_ = index;
-    info.nameSize_ = strippedName.size();
-    memset(info.name_,0,sizeof(info.name_));
-    memcpy(info.name_,strippedName.c_str(),info.nameSize_);
+    info.name_.clear();
     struct stat st;
     stat(name.c_str(),&st);
     info.size_ = st.st_size;
