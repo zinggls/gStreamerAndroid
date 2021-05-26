@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean receiveBtn=false;
     private boolean selfSndBtn=false;
     private static final String TAG = "glsusb";
-    private static final String ACTION_USB_PERMISSION = "com.example.usbHandle.USB_PERMISSION";
+    private static final String ACTION_USB_PERMISSION = "com.example.gstreamer.USB_PERMISSION";
     private UsbManager usbManager;
     private int fileDescriptor;
     public static final int PRODUCT_ID = 0x00f0;    //FX3
