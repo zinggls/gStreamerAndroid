@@ -576,6 +576,7 @@ public class MainActivity extends AppCompatActivity {
             LI(TAG, "BroadcastReceiver.onReceive called");
 
             String action = intent.getAction();
+            LI(TAG, "action="+action);
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
                     UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
