@@ -56,7 +56,7 @@ static size_t gBytes;
 static ByteSec gPrev;
 static Thread gRcv,gSnd;
 
-std::string KMG(unsigned int val)
+static std::string KMG(unsigned int val)
 {
     const int K = 1000;
     char buf[32];
