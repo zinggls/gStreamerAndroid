@@ -300,11 +300,13 @@ public class MainActivity extends AppCompatActivity {
                 if(receiveBtn){
                     btnSnd.setEnabled(true);
                     btnRcv.setText("Recv");
+                    chart.setVisibility(View.INVISIBLE);
                     stopReader();
                     LI(TAG, "Reader stopped");
                 }else{
                     btnSnd.setEnabled(false);
                     btnRcv.setText("StopRecv");
+                    chart.setVisibility(View.VISIBLE);
                     if((r=reader())==0) {
                         LI(TAG, "Reader starts successfully");
                     }else{
