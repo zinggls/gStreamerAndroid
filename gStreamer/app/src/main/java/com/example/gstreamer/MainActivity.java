@@ -612,6 +612,20 @@ public class MainActivity extends AppCompatActivity {
                 LI(TAG, "ACTION_USB_DEVICE_ATTACHED");
             }else if (action.equals(UsbManager.ACTION_USB_DEVICE_DETACHED)){
                 LI(TAG, "ACTION_USB_DEVICE_DETACHED");
+
+                if(receiveBtn) {
+                    btnRcv.setText("Recv");
+                    stopReader();
+                    receiveBtn = false;
+                }
+                close();
+                btnCon.setEnabled(true);
+                btnSnd.setEnabled(false);
+                btnRcv.setEnabled(false);
+                btnCon.setText("Connect");
+                chart.setVisibility(View.INVISIBLE);
+                pgFile.setVisibility(View.INVISIBLE);
+                LI(TAG,"Device closed");
             }
         }
     };
