@@ -646,7 +646,12 @@ extern "C" JNIEXPORT jint JNICALL
 
     void *result;
     gRcv.run = false;
-    return pthread_join(gRcv.id,&result);
+    int r = 0;
+    if(gRcv.id!=-1) {
+        r = pthread_join(gRcv.id,&result);
+        gRcv.id = -1;
+    }
+    return r;
 }
 
 extern "C" JNIEXPORT jlong JNICALL
@@ -691,7 +696,12 @@ Java_com_example_gstreamer_MainActivity_stopWriter
 
     void *result;
     gSnd.run = false;
-    return pthread_join(gSnd.id,&result);
+    int r = 0;
+    if(gSnd.id!=-1) {
+        r = pthread_join(gSnd.id,&result);
+        gSnd.id = -1;
+    }
+    return r;
 }
 
 extern "C" JNIEXPORT jint JNICALL
