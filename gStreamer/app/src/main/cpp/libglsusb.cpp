@@ -621,7 +621,10 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_example_gstreamer_MainActivity_close
         (JNIEnv *env, jobject thiz)
 {
-    env->DeleteGlobalRef(gObject);
+    if(gObject) {
+        env->DeleteGlobalRef(gObject);
+        gObject = NULL;
+    }
     libusb_exit(NULL);
 }
 
