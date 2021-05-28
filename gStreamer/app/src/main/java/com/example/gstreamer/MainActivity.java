@@ -241,6 +241,8 @@ public class MainActivity extends AppCompatActivity {
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(usbReceiver, filter);
 
         btnCon.setOnClickListener(new View.OnClickListener(){
@@ -606,6 +608,10 @@ public class MainActivity extends AppCompatActivity {
                         LE(TAG, "permission denied for device " + device);
                     }
                 }
+            }else if (action.equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)) {
+                LI(TAG, "ACTION_USB_DEVICE_ATTACHED");
+            }else if (action.equals(UsbManager.ACTION_USB_DEVICE_DETACHED)){
+                LI(TAG, "ACTION_USB_DEVICE_DETACHED");
             }
         }
     };
