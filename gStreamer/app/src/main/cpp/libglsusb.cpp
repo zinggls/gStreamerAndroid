@@ -468,7 +468,7 @@ static void FileInfo(FILEINFO &info,int files,int index,std::string name)
     std::string strippedName = stripPath(name);
     info.files_ = files;
     info.index_ = index;
-    info.name_.clear();
+    info.name_.assign(strippedName.begin(),strippedName.end());
     struct stat st;
     stat(name.c_str(),&st);
     info.size_ = st.st_size;
