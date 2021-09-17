@@ -282,7 +282,7 @@ static void* readerThread(void *arg)
                 __android_log_print(ANDROID_LOG_INFO,TAG,"size:%u",info.size_);
 
                 char path[512];
-                sprintf(path,"/sdcard/download/%S",info.name_.c_str());
+                sprintf(path,"/storage/emulated/0/Android/data/com.example.gstreamer/files/%S",info.name_.c_str());
                 __android_log_print(ANDROID_LOG_INFO,TAG,"file path:%s",path);
                 pFile = fopen(path,"w");
                 if(pFile) {
