@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import com.example.gstreamer.RealPathUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -550,11 +551,11 @@ public class MainActivity extends AppCompatActivity {
                 for(int i=0;i<clip.getItemCount();i++) {
                     ClipData.Item item = clip.getItemAt(i);
                     Uri uri = item.getUri();
-                    fileList.add(getRealPathFromURI(uri));
+                    fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
-                fileList.add(getRealPathFromURI(data.getData()));
+                fileList.add(RealPathUtil.getRealPath(getApplicationContext(),data.getData()));
             }
             if(fileList.size()>0) {
                 int r = writer(fileList);
