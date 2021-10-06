@@ -743,4 +743,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void onFileName(String s)
+    {
+        Log.i(TAG,"onFileName");
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                LI(TAG,"Received FileName:" + s);
+            }
+        });
+    }
 }

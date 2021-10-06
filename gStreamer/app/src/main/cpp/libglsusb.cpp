@@ -49,6 +49,7 @@ static jmethodID gOnFileReceivedCB = NULL;
 static jmethodID gOnFileSentCB = NULL;
 static jmethodID gOnAllFilesSentCB = NULL;
 static jmethodID gOnFileProgressCB = NULL;
+static jmethodID gOnFileName = NULL;
 static jobject gObject = NULL;
 static std::vector<std::string> gFileList;
 static StopWatch gRcvWatch;
@@ -280,6 +281,9 @@ static void* readerThread(void *arg)
                 __android_log_print(ANDROID_LOG_INFO,TAG,"nameSize:%d",info.name_.size());
                 __android_log_print(ANDROID_LOG_INFO,TAG,"%S",info.name_.c_str());
                 __android_log_print(ANDROID_LOG_INFO,TAG,"size:%u",info.size_);
+
+                jstring js = v.m_env->NewString(reinterpret_cast<const jchar *>(info.name_.c_str()),2*info.name_.length());
+                v.m_env->CallVoidMethod(gObject,gOnFileName,js);
 
                 char path[512];
                 sprintf(path,"/sdcard/download/%S",info.name_.c_str());
@@ -567,6 +571,9 @@ static void initFuncPointers(JNIEnv *env)
 
     gOnFileProgressCB  = getMethod(env,cls,"onFileProgress","(I)V");
     getMethodLog(gOnFileProgressCB,"onFileProgress");
+
+    gOnFileName = getMethod(env,cls,"onFileName","(Ljava/lang/String;)V");
+    getMethodLog(gOnFileName,"onFileName");
 }
 
 extern "C" JNIEXPORT jstring JNICALL
