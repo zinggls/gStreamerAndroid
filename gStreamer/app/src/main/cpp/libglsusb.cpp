@@ -592,7 +592,7 @@ Java_com_example_gstreamer_MainActivity_stringFromJNI(
         JNIEnv* env,
         jobject /* this */) {
 
-    std::string hello = "gStreamer Android v0.1.6";
+    std::string hello = "gStreamer Android v0.1.7";
     return env->NewStringUTF(hello.c_str());
 }
 
