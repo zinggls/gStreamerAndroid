@@ -308,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
                 if(receiveBtn){
                     btnSnd.setEnabled(true);
                     btnRcv.setText("Recv");
-                    chart.setVisibility(View.INVISIBLE);
+                    chart.setVisibility(View.VISIBLE);
                     stopReader();
                     LI(TAG, "Reader stopped");
                 }else{
@@ -633,7 +633,7 @@ public class MainActivity extends AppCompatActivity {
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
                 btnCon.setText("Connect");
-                chart.setVisibility(View.INVISIBLE);
+                chart.setVisibility(View.VISIBLE);
                 pgFile.setVisibility(View.INVISIBLE);
                 LI(TAG,"Device closed");
             }
