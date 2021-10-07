@@ -222,7 +222,9 @@ static void onFileClose(FILE *pFile,FILEINFO *pInfo)
         return;
     }
 
-    jstring js = v.m_env->NewString(reinterpret_cast<const jchar *>(pInfo->name_.c_str()),2*pInfo->name_.length());
+    std::string name;
+    name.assign(pInfo->name_.begin(),pInfo->name_.end());
+    jstring js = v.m_env->NewStringUTF(name.c_str());
     v.m_env->CallVoidMethod(gObject,gOnFileReceivedCB,js);
     float sec = std::chrono::duration_cast<std::chrono::milliseconds>(gRcvWatch.stop-gRcvWatch.start).count()/1000.;
     js = v.m_env->NewStringUTF((commas(std::to_string(pInfo->size_))+"Bytes "+elapsedTime(gRcvWatch.stop-gRcvWatch.start)
