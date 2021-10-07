@@ -269,7 +269,9 @@ static void* readerThread(void *arg)
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, TIMEOUT);
         if(r==0){
             gBytes += transferred;
+#ifdef DEBUG
             __android_log_print(ANDROID_LOG_INFO, TAG, "%u %dbytes", ++gCount, transferred);
+#endif
             if(isInputEP(ep)&&syncFound(buf,sizeof(gSync))) {
                 __android_log_print(ANDROID_LOG_INFO,TAG,"InputEP(0x%x) Sync found",ep);
 
@@ -311,10 +313,14 @@ static void* readerThread(void *arg)
                 }
             }else{
                 if(pFile) {
+#ifdef DEBUG
                     __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu received: %d",bytes,transferred);
+#endif
                     if(bytes+transferred <= info.size_) {
                         size_t szWrite = fwrite(buf,1,transferred,pFile);
+#ifdef DEBUG
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
+#endif
                         assert(szWrite==transferred);
                         bytes += transferred;
                         if(bytes == info.size_) {
@@ -324,13 +330,17 @@ static void* readerThread(void *arg)
                     }else if(bytes+transferred > info.size_) {
                         size_t szWrite = fwrite(buf,1,info.size_-bytes,pFile);
                         assert(szWrite==(info.size_-bytes));
+#ifdef DEBUG
                         __android_log_print(ANDROID_LOG_INFO,TAG,"bytes: %zu written to file",szWrite);
+#endif
                         bytes += (info.size_-bytes);
                         assert(bytes==info.size_);
                         onFileClose(pFile,&info);
                         pFile = NULL;
                     }
+#ifdef DEBUG
                     __android_log_print(ANDROID_LOG_INFO,TAG,"file:%S bytes/Total= %zu/%u",info.name_.c_str(),bytes,info.size_);
+#endif
                     v.m_env->CallVoidMethod(gObject,gOnFileProgressCB,percent(bytes,info.size_));
                 }else{
                     bytes += transferred;
