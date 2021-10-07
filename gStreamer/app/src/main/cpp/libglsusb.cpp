@@ -282,8 +282,9 @@ static void* readerThread(void *arg)
                 __android_log_print(ANDROID_LOG_INFO,TAG,"%S",info.name_.c_str());
                 __android_log_print(ANDROID_LOG_INFO,TAG,"size:%u",info.size_);
 
-                jstring js = v.m_env->NewString(reinterpret_cast<const jchar *>(info.name_.c_str()),2*info.name_.length());
-                int fd = v.m_env->CallIntMethod(gObject,gOnFileName,js);
+                std::string name;
+                name.assign(info.name_.begin(),info.name_.end());
+                int fd = v.m_env->CallIntMethod(gObject,gOnFileName,v.m_env->NewStringUTF(name.c_str()));
                 __android_log_print(ANDROID_LOG_INFO,TAG,"fd=%d",fd);
 
                 pFile = fdopen(fd,"w");
