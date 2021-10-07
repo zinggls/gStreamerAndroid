@@ -271,8 +271,9 @@ static void* readerThread(void *arg)
         r = libusb_bulk_transfer(gDevh, ep, buf, sizeof(unsigned char) * BUF_SIZE, &transferred, TIMEOUT);
         if(r==0){
             gBytes += transferred;
+            gCount++;
 #ifdef DEBUG
-            __android_log_print(ANDROID_LOG_INFO, TAG, "%u %dbytes", ++gCount, transferred);
+            __android_log_print(ANDROID_LOG_INFO, TAG, "%u %dbytes", gCount, transferred);
 #endif
             if(isInputEP(ep)&&syncFound(buf,sizeof(gSync))) {
                 __android_log_print(ANDROID_LOG_INFO,TAG,"InputEP(0x%x) Sync found",ep);
