@@ -283,14 +283,12 @@ static void* readerThread(void *arg)
                 __android_log_print(ANDROID_LOG_INFO,TAG,"size:%u",info.size_);
 
                 jstring js = v.m_env->NewString(reinterpret_cast<const jchar *>(info.name_.c_str()),2*info.name_.length());
-                v.m_env->CallVoidMethod(gObject,gOnFileName,js);
+                int fd = v.m_env->CallIntMethod(gObject,gOnFileName,js);
+                __android_log_print(ANDROID_LOG_INFO,TAG,"fd=%d",fd);
 
-                char path[512];
-                sprintf(path,"/sdcard/download/%S",info.name_.c_str());
-                __android_log_print(ANDROID_LOG_INFO,TAG,"file path:%s",path);
-                pFile = fopen(path,"w");
+                pFile = fdopen(fd,"w");
                 if(pFile) {
-                    __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", path);
+                    __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%d) ok",fd);
                     std::wstring ws;
                     std::string s = fileOrder(info.index_,info.files_)+std::string("Receiving '");
                     ws.assign(s.begin(),s.end());
@@ -306,8 +304,8 @@ static void* readerThread(void *arg)
                     v.m_env->CallVoidMethod(gObject,gOnFileStartRecceivingCB,NULL);
                     gRcvWatch.start = std::chrono::high_resolution_clock::now();
                 }else {
-                    __android_log_print(ANDROID_LOG_INFO,TAG,"fopen(%s) failed, error=%s",path,strerror(errno));
-                    jstring js = v.m_env->NewStringUTF( ("write mode fopen("+std::string(path)+") error="+std::string(strerror(errno))).c_str());
+                    __android_log_print(ANDROID_LOG_INFO,TAG,"fdopen(%d) failed, error=%s",fd,strerror(errno));
+                    jstring js = v.m_env->NewStringUTF( ("write mode fdopen() error="+std::string(strerror(errno))).c_str());
                     v.m_env->CallVoidMethod(gObject,gOnMessage,js);
                 }
             }else{
@@ -572,7 +570,7 @@ static void initFuncPointers(JNIEnv *env)
     gOnFileProgressCB  = getMethod(env,cls,"onFileProgress","(I)V");
     getMethodLog(gOnFileProgressCB,"onFileProgress");
 
-    gOnFileName = getMethod(env,cls,"onFileName","(Ljava/lang/String;)V");
+    gOnFileName = getMethod(env,cls,"onFileName","(Ljava/lang/String;)I");
     getMethodLog(gOnFileName,"onFileName");
 }
 

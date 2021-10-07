@@ -9,7 +9,9 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
+import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,6 +30,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -53,6 +56,10 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -744,14 +751,37 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void onFileName(String s)
+    public int onFileName(String s)
     {
-        Log.i(TAG,"onFileName");
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                LI(TAG,"Received FileName:" + s);
+        Log.i(TAG,"onFileName=" + s);
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Video.Media.DISPLAY_NAME, s);
+        values.put(MediaStore.Video.Media.MIME_TYPE, "video/*");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.Video.Media.IS_PENDING, 1);
+        }
+
+        ContentResolver contentResolver = getContentResolver();
+        Uri item = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+
+        int fd = -1;
+        try{
+            ParcelFileDescriptor parcelFd = contentResolver.openFileDescriptor(item, "w");
+            if (parcelFd != null) {
+                fd = parcelFd.detachFd();
+                Log.i(TAG,"detachFd=" + fd);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    values.clear();
+                    values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                    contentResolver.update(item, values, null, null);
+                }
             }
-        });
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }
+        return fd;
     }
 }
