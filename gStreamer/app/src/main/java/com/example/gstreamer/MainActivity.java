@@ -393,6 +393,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnSpd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LI(TAG, "bps Speed Viewer");
+                Intent intent = new Intent(getApplicationContext(),BpsView.class);
+                startActivity(intent);
+            }
+        });
+
         isStoragePermissionGranted();
     }
 
