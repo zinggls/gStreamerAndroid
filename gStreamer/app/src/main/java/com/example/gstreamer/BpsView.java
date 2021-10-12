@@ -19,7 +19,10 @@ public class BpsView extends AppCompatActivity {
 
         btnMain = (Button) findViewById(R.id.button_main);
         speedMeter = (SpeedView) findViewById(R.id.bpsView);
-        speedMeter.speedTo(50);
+        speedMeter.setUnit("Gbps");
+        speedMeter.setMinSpeed(0.0F);
+        speedMeter.setMaxSpeed(2.5F);
+        speedMeter.speedTo(1.1F);
 
         btnMain.setOnClickListener(new View.OnClickListener() {
             @Override
