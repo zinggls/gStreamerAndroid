@@ -15,4 +15,10 @@
         android:textAllCaps="false"
         android:layout_gravity="center"/>
 
+    <com.github.anastr.speedviewlib.SpeedView
+        android:id="@+id/bpsView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
+
 </LinearLayout>
