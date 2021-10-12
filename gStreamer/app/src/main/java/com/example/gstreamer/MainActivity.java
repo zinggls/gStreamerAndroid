@@ -399,6 +399,7 @@ public class MainActivity extends AppCompatActivity {
                 LI(TAG, "bps Speed Viewer");
                 Intent intent = new Intent(getApplicationContext(),BpsView.class);
                 startActivity(intent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         });
 
