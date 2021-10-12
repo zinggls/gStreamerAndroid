@@ -5,7 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:gravity="center"
     tools:context=".BpsView">
+
+    <com.github.anastr.speedviewlib.SpeedView
+        android:id="@+id/bpsView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"/>
 
     <Button
         android:id="@+id/button_main"
@@ -13,12 +20,6 @@
         android:layout_height="wrap_content"
         android:text="To Main"
         android:textAllCaps="false"
-        android:layout_gravity="center"/>
-
-    <com.github.anastr.speedviewlib.SpeedView
-        android:id="@+id/bpsView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_gravity="center"/>
 
 </LinearLayout>
