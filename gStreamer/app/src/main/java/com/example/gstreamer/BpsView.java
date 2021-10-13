@@ -1,15 +1,16 @@
 package com.example.gstreamer;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
 import com.github.anastr.speedviewlib.SpeedView;
+import java.util.Random;
 
 public class BpsView extends AppCompatActivity {
     private Button btnMain;
+    private Button btnUpdate;
     private SpeedView speedMeter;
 
     @Override
@@ -24,11 +25,20 @@ public class BpsView extends AppCompatActivity {
         speedMeter.setMaxSpeed(2.5F);
         speedMeter.speedTo(0.0F);
         speedMeter.setWithTremble(false);
+        btnUpdate = (Button) findViewById(R.id.button_update);
 
         btnMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
+            }
+        });
+
+        btnUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Random random = new Random();
+                speedMeter.speedTo(random.nextFloat());
             }
         });
     }
