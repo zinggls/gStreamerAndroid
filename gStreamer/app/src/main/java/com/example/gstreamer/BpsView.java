@@ -23,6 +23,7 @@ public class BpsView extends AppCompatActivity {
         speedMeter.setMinSpeed(0.0F);
         speedMeter.setMaxSpeed(2.5F);
         speedMeter.speedTo(1.1F);
+        speedMeter.setWithTremble(false);
 
         btnMain.setOnClickListener(new View.OnClickListener() {
             @Override
