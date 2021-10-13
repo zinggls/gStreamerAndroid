@@ -16,7 +16,8 @@
         android:theme="@style/Theme.GStreamer">
         <activity
             android:name=".BpsView"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".MainActivity"
             android:configChanges="screenSize|orientation"
