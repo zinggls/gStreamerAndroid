@@ -404,6 +404,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        chart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnSpd.performClick();
+            }
+        });
+
         isStoragePermissionGranted();
     }
 
