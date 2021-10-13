@@ -14,6 +14,7 @@ public class BpsView extends AppCompatActivity {
     private Button btnMain;
     private Button btnUpdate;
     private SpeedView speedMeter;
+    private float fValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +41,13 @@ public class BpsView extends AppCompatActivity {
         btnUpdate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Random random = new Random();
-                speedMeter.speedTo(random.nextFloat());
+                speedMeter.speedTo(fValue);
             }
         });
     }
 
-    public void UpdateButton() {
+    public void UpdateButton(float v) {
+        fValue = v;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
