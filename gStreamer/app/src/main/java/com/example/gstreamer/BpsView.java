@@ -44,6 +44,7 @@ public class BpsView extends AppCompatActivity {
                 speedMeter.speedTo(fValue);
             }
         });
+        btnUpdate.setVisibility(View.INVISIBLE);
     }
 
     public void UpdateButton(float v) {
