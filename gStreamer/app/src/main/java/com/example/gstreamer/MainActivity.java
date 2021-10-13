@@ -245,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
                     float value = (float) (((float)bpsVal)/1000000000.0);
                     //Log.i(TAG,"v="+value);
                     addEntry(value);
+                    if(BpsView.context!=null) ((BpsView)BpsView.context).UpdateButton();
                 }
             }
         };
