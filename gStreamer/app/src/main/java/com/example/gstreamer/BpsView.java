@@ -50,7 +50,7 @@ public class BpsView extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                btnUpdate.performClick();
+                speedMeter.speedTo(fValue);
             }
         });
     }
