@@ -35,7 +35,7 @@ public class BpsView extends AppCompatActivity {
         });
     }
 
-    public void UpdateButton(float v) {
+    public void update(float v) {
         fValue = v;
         runOnUiThread(new Runnable() {
             @Override
