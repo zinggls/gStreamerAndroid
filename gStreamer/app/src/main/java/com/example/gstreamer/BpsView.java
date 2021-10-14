@@ -11,7 +11,6 @@ import java.util.Random;
 
 public class BpsView extends AppCompatActivity {
     public static Context context;
-    private Button btnUpdate;
     private SpeedView speedMeter;
     private float fValue;
 
@@ -27,7 +26,6 @@ public class BpsView extends AppCompatActivity {
         speedMeter.setMaxSpeed(2.5F);
         speedMeter.speedTo(0.0F);
         speedMeter.setWithTremble(false);
-        btnUpdate = (Button) findViewById(R.id.button_update);
 
         speedMeter.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,14 +33,6 @@ public class BpsView extends AppCompatActivity {
                 finish();
             }
         });
-
-        btnUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                speedMeter.speedTo(fValue);
-            }
-        });
-        btnUpdate.setVisibility(View.INVISIBLE);
     }
 
     public void UpdateButton(float v) {
