@@ -11,7 +11,6 @@ import java.util.Random;
 
 public class BpsView extends AppCompatActivity {
     public static Context context;
-    private Button btnMain;
     private Button btnUpdate;
     private SpeedView speedMeter;
     private float fValue;
@@ -22,7 +21,6 @@ public class BpsView extends AppCompatActivity {
         setContentView(R.layout.activity_bps_view);
 
         context = this;
-        btnMain = (Button) findViewById(R.id.button_main);
         speedMeter = (SpeedView) findViewById(R.id.bpsView);
         speedMeter.setUnit("Gbps");
         speedMeter.setMinSpeed(0.0F);
@@ -31,7 +29,7 @@ public class BpsView extends AppCompatActivity {
         speedMeter.setWithTremble(false);
         btnUpdate = (Button) findViewById(R.id.button_update);
 
-        btnMain.setOnClickListener(new View.OnClickListener() {
+        speedMeter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
