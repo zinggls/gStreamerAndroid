@@ -77,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
     private Button btnCon;
     private Button btnSnd;
     private Button btnRcv;
-    private Button btnSpd;
     private boolean receiveBtn=false;
     private boolean selfSndBtn=false;
     private static final String TAG = "glsusb";
@@ -115,11 +114,9 @@ public class MainActivity extends AppCompatActivity {
         btnCon = (Button)findViewById(R.id.button_Connect);
         btnSnd = (Button)findViewById(R.id.button_Send);
         btnRcv = (Button)findViewById(R.id.button_Recv);
-        btnSpd = (Button)findViewById(R.id.button_Speed);
         btnCon.setEnabled(true);
         btnSnd.setEnabled(false);
         btnRcv.setEnabled(false);
-        btnSpd.setEnabled(false);
     }
 
     private void createProgressbar()
@@ -312,14 +309,12 @@ public class MainActivity extends AppCompatActivity {
                 if(receiveBtn){
                     btnSnd.setEnabled(true);
                     btnRcv.setText("Recv");
-                    btnSpd.setEnabled(false);
                     chart.setVisibility(View.VISIBLE);
                     stopReader();
                     LI(TAG, "Reader stopped");
                 }else{
                     btnSnd.setEnabled(false);
                     btnRcv.setText("StopRecv");
-                    btnSpd.setEnabled(true);
                     chart.setVisibility(View.VISIBLE);
                     if((r=reader())==0) {
                         LI(TAG, "Reader starts successfully");
@@ -339,7 +334,6 @@ public class MainActivity extends AppCompatActivity {
                     stopWriter();
                     btnSnd.setEnabled(true);
                     btnRcv.setEnabled(true);
-                    btnSpd.setEnabled(false);
                     btnSnd.setText("Send");
                     LI(TAG, "Writer stopped");
                     selfSndBtn = !selfSndBtn;
@@ -380,10 +374,8 @@ public class MainActivity extends AppCompatActivity {
                             int r = writer(null);
                             if(r==0) {
                                 LI(TAG, "Writer starts successfully");
-                                btnSpd.setEnabled(true);
                             }else{
                                 LE(TAG, "Writer failed to start, error=" + r);
-                                btnSpd.setEnabled(false);
                             }
                             dialog.dismiss();
                         }
@@ -394,20 +386,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        btnSpd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LI(TAG, "bps Speed Viewer");
-                Intent intent = new Intent(getApplicationContext(),BpsView.class);
-                startActivity(intent);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            }
-        });
-
         chart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                btnSpd.performClick();
+                Intent intent = new Intent(getApplicationContext(),BpsView.class);
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         });
 
@@ -591,11 +575,9 @@ public class MainActivity extends AppCompatActivity {
                 fileList.add(RealPathUtil.getRealPath(getApplicationContext(),data.getData()));
             }
 
-            btnSpd.setEnabled(false);
             if(fileList.size()>0) {
                 int r = writer(fileList);
                 if(r==0) {
-                    btnSpd.setEnabled(true);
                     pgFile.setVisibility(View.VISIBLE);
                     LI(TAG, "Writer starts successfully");
                 }else{
@@ -634,7 +616,6 @@ public class MainActivity extends AppCompatActivity {
                                 btnCon.setEnabled(false);
                                 btnSnd.setEnabled(true);
                                 btnRcv.setEnabled(true);
-                                btnSpd.setEnabled(false);
                                 btnCon.setText("Connected");
                                 chart.setVisibility(View.VISIBLE);
                                 pgFile.setVisibility(View.INVISIBLE);
@@ -662,7 +643,6 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(true);
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
-                btnSpd.setEnabled(false);
                 btnCon.setText("Connect");
                 chart.setVisibility(View.VISIBLE);
                 pgFile.setVisibility(View.INVISIBLE);
@@ -764,7 +744,6 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(true);
                 btnRcv.setEnabled(true);
-                btnSpd.setEnabled(false);
                 btnSnd.setText("Send");
                 pgFile.setVisibility(View.INVISIBLE);
                 LI(TAG,s);
