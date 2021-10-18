@@ -6,12 +6,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.github.anastr.speedviewlib.ImageSpeedometer;
 import com.github.anastr.speedviewlib.SpeedView;
 import java.util.Random;
 
 public class BpsView extends AppCompatActivity {
     public static Context context;
-    private SpeedView speedMeter;
+    private ImageSpeedometer speedMeter;
     private float fValue;
 
     @Override
@@ -20,12 +21,7 @@ public class BpsView extends AppCompatActivity {
         setContentView(R.layout.activity_bps_view);
 
         context = this;
-        speedMeter = (SpeedView) findViewById(R.id.bpsView);
-        speedMeter.setUnit("Gbps");
-        speedMeter.setMinSpeed(0.0F);
-        speedMeter.setMaxSpeed(2.5F);
-        speedMeter.speedTo(0.0F);
-        speedMeter.setWithTremble(false);
+        speedMeter = (ImageSpeedometer) findViewById(R.id.bpsView);
 
         speedMeter.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,7 +36,7 @@ public class BpsView extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                speedMeter.speedTo(fValue);
+                speedMeter.speedTo(fValue*1000.0F);
             }
         });
     }

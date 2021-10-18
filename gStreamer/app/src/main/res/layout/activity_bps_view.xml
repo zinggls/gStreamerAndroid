@@ -6,12 +6,24 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="@color/black"
     tools:context=".BpsView">
 
-    <com.github.anastr.speedviewlib.SpeedView
+    <com.github.anastr.speedviewlib.ImageSpeedometer
         android:id="@+id/bpsView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        app:sv_image="@drawable/for_image_speedometer"
+        app:sv_indicator="NormalSmallIndicator"
+        app:sv_indicatorColor="#a750bcff"
+        app:sv_speedTextColor="#fff"
+        app:sv_unitTextColor="#fff"
+        app:sv_speedTextSize="30dp"
+        app:sv_unitTextSize="15dp"
+        app:sv_unit="Mbps"
+        app:sv_minSpeed="0.0"
+        app:sv_maxSpeed="1200.0"
+        app:sv_withTremble="false"/>
 
 </LinearLayout>
