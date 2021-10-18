@@ -6,8 +6,18 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@color/black"
+    android:background="@color/bg_speedmeter"
     tools:context=".BpsView">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SPEEDTEST"
+        android:textColor="@color/white"
+        android:textSize="30dp"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="50dp"/>
 
     <com.github.anastr.speedviewlib.ImageSpeedometer
         android:id="@+id/bpsView"
