@@ -8,12 +8,15 @@ import android.widget.Button;
 
 import com.github.anastr.speedviewlib.ImageSpeedometer;
 import com.github.anastr.speedviewlib.SpeedView;
+import com.github.anastr.speedviewlib.components.Indicators.ImageIndicator;
+
 import java.util.Random;
 
 public class BpsView extends AppCompatActivity {
     public static Context context;
     private ImageSpeedometer speedMeter;
     private float fValue;
+    private ImageIndicator imageIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +25,8 @@ public class BpsView extends AppCompatActivity {
 
         context = this;
         speedMeter = (ImageSpeedometer) findViewById(R.id.bpsView);
+        imageIndicator = new ImageIndicator(getApplicationContext(),R.drawable.image_indicator1);
+        speedMeter.setIndicator(imageIndicator);
 
         speedMeter.setOnClickListener(new View.OnClickListener() {
             @Override
