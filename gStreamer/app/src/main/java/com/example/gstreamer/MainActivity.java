@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
                         LI(TAG, "File mode selected");
 
                         Intent chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
-                        chooseFile.setType("*/*");
+                        chooseFile.setType("video/*");
                         chooseFile.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
                         startActivityForResult(Intent.createChooser(chooseFile,"Choose a file"),0);
                         dialog.dismiss();
