@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        app:sv_image="@drawable/for_image_speedometer"
+        app:sv_image="@drawable/guage_max1000"
         app:sv_indicator="NormalSmallIndicator"
         app:sv_indicatorColor="#a750bcff"
         app:sv_speedTextColor="#fff"
