@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        app:sv_image="@drawable/for_image_speedometer"
+        app:sv_image="@drawable/guage_max1500"
         app:sv_indicator="NormalSmallIndicator"
         app:sv_indicatorColor="#a750bcff"
         app:sv_speedTextColor="#fff"
@@ -33,7 +33,7 @@
         app:sv_unitTextSize="15dp"
         app:sv_unit="Mbps"
         app:sv_minSpeed="0.0"
-        app:sv_maxSpeed="1200.0"
+        app:sv_maxSpeed="1500.0"
         app:sv_withTremble="false"/>
 
 </LinearLayout>
