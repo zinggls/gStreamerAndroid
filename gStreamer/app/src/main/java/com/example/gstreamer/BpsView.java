@@ -25,7 +25,7 @@ public class BpsView extends AppCompatActivity {
 
         context = this;
         speedMeter = (ImageSpeedometer) findViewById(R.id.bpsView);
-        imageIndicator = new ImageIndicator(getApplicationContext(),R.drawable.image_indicator1);
+        imageIndicator = new ImageIndicator(getApplicationContext(),R.drawable.indicator);
         speedMeter.setIndicator(imageIndicator);
 
         speedMeter.setOnClickListener(new View.OnClickListener() {
