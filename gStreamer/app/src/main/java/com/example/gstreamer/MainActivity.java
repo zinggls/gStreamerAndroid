@@ -581,10 +581,13 @@ public class MainActivity extends AppCompatActivity {
                     ClipData.Item item = clip.getItemAt(i);
                     Uri uri = item.getUri();
                     fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
+                    Log.i(TAG,"i="+i+",File:"+fileName(uri)+",Size="+fileSize(uri));
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
-                fileList.add(RealPathUtil.getRealPath(getApplicationContext(),data.getData()));
+                Uri uri = data.getData();
+                fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
+                Log.i(TAG,"File:"+fileName(uri)+",Size="+fileSize(uri));
             }
 
             if(fileList.size()>0) {
