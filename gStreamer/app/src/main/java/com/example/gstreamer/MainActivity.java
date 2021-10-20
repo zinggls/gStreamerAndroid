@@ -573,10 +573,11 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == 0 && resultCode == RESULT_OK) {
             //LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
 
+            MetaInfo[] metaInfoArray;
             ArrayList<String> fileList = new ArrayList<String>();
             ClipData clip = data.getClipData();
             if(clip!=null) {
-                MetaInfo[] metaInfoArray = new MetaInfo[clip.getItemCount()];
+                metaInfoArray = new MetaInfo[clip.getItemCount()];
                 LI(TAG, "ItemCount="+clip.getItemCount());
                 for(int i=0;i<clip.getItemCount();i++) {
                     ClipData.Item item = clip.getItemAt(i);
@@ -587,9 +588,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
+                metaInfoArray = new MetaInfo[1];
                 Uri uri = data.getData();
                 fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
                 Log.i(TAG,"File:"+fileName(uri)+",Size="+fileSize(uri));
+                metaInfoArray[0] = new MetaInfo(fileName(uri),fileSize(uri));
             }
 
             if(fileList.size()>0) {
