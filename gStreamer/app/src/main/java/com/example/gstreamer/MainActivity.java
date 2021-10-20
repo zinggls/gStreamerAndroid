@@ -555,6 +555,12 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+    private Long fileSize(Uri uri) {
+        Cursor cursor = getContentResolver().query(uri,null,null,null,null);
+        cursor.moveToFirst();
+        return cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
