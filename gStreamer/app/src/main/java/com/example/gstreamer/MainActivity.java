@@ -561,6 +561,12 @@ public class MainActivity extends AppCompatActivity {
         return cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
     }
 
+    private String fileName(Uri uri) {
+        Cursor cursor = getContentResolver().query(uri,null,null,null,null);
+        cursor.moveToFirst();
+        return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
