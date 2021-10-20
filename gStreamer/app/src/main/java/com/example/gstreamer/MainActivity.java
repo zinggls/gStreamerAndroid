@@ -576,12 +576,14 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<String> fileList = new ArrayList<String>();
             ClipData clip = data.getClipData();
             if(clip!=null) {
+                MetaInfo[] metaInfoArray = new MetaInfo[clip.getItemCount()];
                 LI(TAG, "ItemCount="+clip.getItemCount());
                 for(int i=0;i<clip.getItemCount();i++) {
                     ClipData.Item item = clip.getItemAt(i);
                     Uri uri = item.getUri();
                     fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
                     Log.i(TAG,"i="+i+",File:"+fileName(uri)+",Size="+fileSize(uri));
+                    metaInfoArray[i] = new MetaInfo(fileName(uri),fileSize(uri));
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
