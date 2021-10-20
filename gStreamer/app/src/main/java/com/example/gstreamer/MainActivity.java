@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     public native int reader();
     public native int stopReader();
     public native long count();
-    public native int writer(Object fileList);
+    public native int writer(Object fileList,Object metaInfoArray);
     public native int stopWriter();
     public native int bps();
 
@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
                             btnRcv.setEnabled(false);
                             btnSnd.setText("StopSend");
                             LI(TAG, "Self mode selected");
-                            int r = writer(null);
+                            int r = writer(null,null);
                             if(r==0) {
                                 LI(TAG, "Writer starts successfully");
                             }else{
@@ -596,7 +596,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if(fileList.size()>0) {
-                int r = writer(fileList);
+                int r = writer(fileList,metaInfoArray);
                 if(r==0) {
                     pgFile.setVisibility(View.VISIBLE);
                     LI(TAG, "Writer starts successfully");
