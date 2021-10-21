@@ -289,7 +289,7 @@ static void* readerThread(void *arg)
                 getFileInfo(buf, transferred, sizeof(gSync), info);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"index:%d",info.index_);
                 __android_log_print(ANDROID_LOG_INFO,TAG,"files:%d",info.files_);
-                __android_log_print(ANDROID_LOG_INFO,TAG,"nameSize:%d",info.name_.size());
+                __android_log_print(ANDROID_LOG_INFO,TAG,"nameSize:%lu",info.name_.size());
                 __android_log_print(ANDROID_LOG_INFO,TAG,"%S",info.name_.c_str());
                 __android_log_print(ANDROID_LOG_INFO,TAG,"size:%u",info.size_);
 
