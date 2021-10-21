@@ -5,5 +5,5 @@ public class MetaInfo {
     long size;
     int fd;
 
-    MetaInfo(String name,Long size){ this.name=name; this.size=size; }
+    MetaInfo(String name,Long size,int fd){ this.name=name; this.size=size; this.fd = fd; }
 }
