@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     public native int reader();
     public native int stopReader();
     public native long count();
-    public native int writer(Object fileList,Object metaInfoArray);
+    public native int writer(Object fileList);
     public native int stopWriter();
     public native int bps();
 
@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
                             btnRcv.setEnabled(false);
                             btnSnd.setText("StopSend");
                             LI(TAG, "Self mode selected");
-                            int r = writer(null,null);
+                            int r = writer(null);
                             if(r==0) {
                                 LI(TAG, "Writer starts successfully");
                             }else{
@@ -573,30 +573,25 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == 0 && resultCode == RESULT_OK) {
             //LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
 
-            MetaInfo[] metaInfoArray;
             ArrayList<String> fileList = new ArrayList<String>();
             ClipData clip = data.getClipData();
             if(clip!=null) {
-                metaInfoArray = new MetaInfo[clip.getItemCount()];
                 LI(TAG, "ItemCount="+clip.getItemCount());
                 for(int i=0;i<clip.getItemCount();i++) {
                     ClipData.Item item = clip.getItemAt(i);
                     Uri uri = item.getUri();
                     fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
                     Log.i(TAG,"i="+i+",File:"+fileName(uri)+",Size="+fileSize(uri));
-                    metaInfoArray[i] = new MetaInfo(fileName(uri),fileSize(uri));
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
-                metaInfoArray = new MetaInfo[1];
                 Uri uri = data.getData();
                 fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
                 Log.i(TAG,"File:"+fileName(uri)+",Size="+fileSize(uri));
-                metaInfoArray[0] = new MetaInfo(fileName(uri),fileSize(uri));
             }
 
             if(fileList.size()>0) {
-                int r = writer(fileList,metaInfoArray);
+                int r = writer(fileList);
                 if(r==0) {
                     pgFile.setVisibility(View.VISIBLE);
                     LI(TAG, "Writer starts successfully");

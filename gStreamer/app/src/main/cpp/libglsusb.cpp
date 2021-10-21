@@ -682,7 +682,7 @@ Java_com_example_gstreamer_MainActivity_count
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_gstreamer_MainActivity_writer
-        (JNIEnv *env, jobject thiz, jobject fileList, jobject metaInfoArray)
+        (JNIEnv *env, jobject thiz, jobject fileList)
 {
     __android_log_print(ANDROID_LOG_INFO,TAG,"writer starts");
 
