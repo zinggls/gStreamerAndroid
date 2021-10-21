@@ -567,27 +567,41 @@ public class MainActivity extends AppCompatActivity {
         return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
     }
 
+    private int openUri(Uri uri){
+        int fd = -1;
+        try{
+            ParcelFileDescriptor parcelFd = getApplicationContext().getContentResolver().openFileDescriptor(uri,"r");
+            if(parcelFd!=null) fd = parcelFd.detachFd();
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }
+        return fd;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 0 && resultCode == RESULT_OK) {
             //LI(TAG, "onActivityResult requestCode is 0 and resultCode is RESULT_OK");
 
-            ArrayList<String> fileList = new ArrayList<String>();
+            ArrayList<MetaInfo> fileList = new ArrayList<MetaInfo>();
             ClipData clip = data.getClipData();
             if(clip!=null) {
                 LI(TAG, "ItemCount="+clip.getItemCount());
                 for(int i=0;i<clip.getItemCount();i++) {
                     ClipData.Item item = clip.getItemAt(i);
                     Uri uri = item.getUri();
-                    fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
-                    Log.i(TAG,"i="+i+",File:"+fileName(uri)+",Size="+fileSize(uri));
+                    int fd = openUri(uri);
+                    assert  fd != -1;
+                    fileList.add(new MetaInfo(fileName(uri),fileSize(uri),fd));
+                    Log.i(TAG,"i="+i+",File:"+fileName(uri)+",Size="+fileSize(uri)+",fd="+fd);
                 }
             }else{
                 //When only one is selected, ClipData is null. data.getData() will be the Uri of the selected one
                 Uri uri = data.getData();
-                fileList.add(RealPathUtil.getRealPath(getApplicationContext(),uri));
-                Log.i(TAG,"File:"+fileName(uri)+",Size="+fileSize(uri));
+                int fd = openUri(uri);
+                fileList.add(new MetaInfo(fileName(uri),fileSize(uri),fd));
+                Log.i(TAG,"File:"+fileName(uri)+",Size="+fileSize(uri)+",fd="+fd);
             }
 
             if(fileList.size()>0) {

@@ -35,6 +35,12 @@ typedef struct{
     pthread_t id;
 } Thread;
 
+typedef struct{
+    std::string name;
+    long size;
+    int fd;
+} MetaInfo;
+
 static libusb_device_handle *gDevh = NULL;
 static unsigned int gCount;
 static unsigned char gEpIN = 0x82;   //Input EP
@@ -51,7 +57,7 @@ static jmethodID gOnAllFilesSentCB = NULL;
 static jmethodID gOnFileProgressCB = NULL;
 static jmethodID gOnFileName = NULL;
 static jobject gObject = NULL;
-static std::vector<std::string> gFileList;
+static std::vector<MetaInfo> gFileList;
 static StopWatch gRcvWatch;
 static size_t gBytes;
 static ByteSec gPrev;
@@ -385,10 +391,10 @@ static int SetFileInfo(unsigned char *buf, int bufSize, unsigned  char *sync, in
     return nOffset;
 }
 
-static void onFileSent(FILE *pFile,const char *pFileName)
+static void onFileSent(FILE *pFile,MetaInfo mi)
 {
     fclose(pFile);
-    __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s sent",pFileName);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"file:%s sent",mi.name.c_str());
 
     JavaVm v(gJavaVM);
     if(v.getEnv(JNI_VERSION_1_4)){
@@ -398,7 +404,7 @@ static void onFileSent(FILE *pFile,const char *pFileName)
         return;
     }
 
-    jstring js = v.m_env->NewStringUTF(stripPath(pFileName).c_str());
+    jstring js = v.m_env->NewStringUTF(stripPath(mi.name.c_str()).c_str());
     v.m_env->CallVoidMethod(gObject,gOnFileSentCB,js);
 }
 
@@ -423,22 +429,21 @@ static void send(unsigned char ep,unsigned char *buf,int bufSize)
     }
 }
 
-static bool sendFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,std::string filename)
+static bool sendFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *pInfo,MetaInfo mi)
 {
-    __android_log_print(ANDROID_LOG_INFO,TAG,"sendFile ep=0x%x filename=%s",ep,filename.c_str());
+    __android_log_print(ANDROID_LOG_INFO,TAG,"sendFile ep=0x%x filename=%s",ep,mi.name.c_str());
     int r,transferred=0;
     gCount = 0;
 
     JavaVm v(gJavaVM);
     assert(v.getEnv(JNI_VERSION_1_4));
-    assert(filename.empty()==false);
 
-    FILE *pFile = fopen(filename.c_str(),"r");
+    FILE *pFile = fdopen(mi.fd,"r");
     if(pFile) {
-        __android_log_print(ANDROID_LOG_INFO, TAG, "fopen(%s) ok", filename.c_str());
+        __android_log_print(ANDROID_LOG_INFO, TAG, "fdopen(%s) ok", mi.name.c_str());
     }else {
-        __android_log_print(ANDROID_LOG_ERROR,TAG,"fopen(%s) failed, error=%s",filename.c_str(),strerror(errno));
-        jstring js = v.m_env->NewStringUTF( ("read mode fopen("+filename+") error="+std::string(strerror(errno))).c_str());
+        __android_log_print(ANDROID_LOG_ERROR,TAG,"fdopen(%s) failed, error=%s",mi.name.c_str(),strerror(errno));
+        jstring js = v.m_env->NewStringUTF( ("read mode fdopen("+mi.name+") error="+std::string(strerror(errno))).c_str());
         v.m_env->CallVoidMethod(gObject,gOnMessage,js);
         return false;
     }
@@ -461,7 +466,7 @@ static bool sendFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *p
         if(szRead==0) {
             assert(feof(pFile));
             __android_log_print(ANDROID_LOG_ERROR,TAG,"fread=%zu",szRead);
-            onFileSent(pFile,filename.c_str());
+            onFileSent(pFile,mi);
             return true;
         }
 
@@ -479,15 +484,12 @@ static bool sendFile(unsigned char ep,unsigned char *buf,int bufSize,FILEINFO *p
     }
 }
 
-static void FileInfo(FILEINFO &info,int files,int index,std::string name)
+static void FileInfo(FILEINFO &info,int files,int index,MetaInfo mi)
 {
-    std::string strippedName = stripPath(name);
     info.files_ = files;
     info.index_ = index;
-    info.name_.assign(strippedName.begin(),strippedName.end());
-    struct stat st;
-    stat(name.c_str(),&st);
-    info.size_ = st.st_size;
+    info.name_.assign(mi.name.begin(),mi.name.end());
+    info.size_ = mi.size;
 }
 
 static void allFilesSent()
@@ -524,8 +526,8 @@ static void* writerThread(void *arg) {
         FILEINFO info;
         for(unsigned int i=0;i<gFileList.size();i++) {
             FileInfo(info,gFileList.size(),i,gFileList.at(i));
-            __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).c_str(),info.size_);
-            jstring js = v.m_env->NewStringUTF((fileOrder(i,info.files_)+std::string("Sending '")+stripPath(gFileList.at(i))+std::string("'")).c_str());
+            __android_log_print(ANDROID_LOG_INFO,TAG,"Processing [%d/%d]-%s (%d)",i,info.files_,gFileList.at(i).name.c_str(),info.size_);
+            jstring js = v.m_env->NewStringUTF((fileOrder(i,info.files_)+std::string("Sending '")+stripPath(gFileList.at(i).name)+std::string("'")).c_str());
             v.m_env->CallVoidMethod(gObject,gOnMessage,js);
 
             auto start = std::chrono::high_resolution_clock::now();
@@ -693,15 +695,31 @@ Java_com_example_gstreamer_MainActivity_writer
         jmethodID java_util_ArrayList_get = env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
         jint len = env->CallIntMethod(fileList, java_util_ArrayList_size);
 
+        jclass cMetaInfo = env->FindClass("com/example/gstreamer/MetaInfo");
+        jfieldID fName = env->GetFieldID(cMetaInfo,"name","Ljava/lang/String;");
+        jfieldID fSize = env->GetFieldID(cMetaInfo,"size", "J");
+        jfieldID fFd = env->GetFieldID(cMetaInfo,"fd", "I");
+
         for(jint i=0;i<len;i++) {
-            jstring element = static_cast<jstring>(env->CallObjectMethod(fileList, java_util_ArrayList_get, i));
-            const char* pchars = env->GetStringUTFChars(element, nullptr);
-            gFileList.emplace_back(pchars);
-            env->ReleaseStringUTFChars(element, pchars);
-            env->DeleteLocalRef(element);
+            jobject obj = env->CallObjectMethod(fileList, java_util_ArrayList_get, i);
+            jobject objName = env->GetObjectField(obj,fName);
+            long size = env->GetLongField(obj,fSize);
+            int fd = env->GetIntField(obj,fFd);
+
+            jstring jstr = static_cast<jstring>(objName);
+            const char* pchars = env->GetStringUTFChars(jstr, nullptr);
+
+            MetaInfo mi;
+            mi.name = pchars;
+            mi.fd = fd;
+            mi.size = size;
+            gFileList.emplace_back(mi);
+
+            env->ReleaseStringUTFChars(jstr, pchars);
+            env->DeleteLocalRef(jstr);
         }
         __android_log_print(ANDROID_LOG_INFO,TAG,"FileList size=%lu",gFileList.size());
-        for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).c_str());
+        for(unsigned int i=0;i<gFileList.size();i++) __android_log_print(ANDROID_LOG_INFO,TAG,"%d-%s",i,gFileList.at(i).name.c_str());
     }
     gSnd.run = true;
     return pthread_create(&gSnd.id,NULL,writerThread,&gEpOut);
