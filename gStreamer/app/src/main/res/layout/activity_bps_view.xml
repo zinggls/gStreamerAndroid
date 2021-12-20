@@ -36,4 +36,12 @@
         app:sv_maxSpeed="1200.0"
         app:sv_withTremble="false"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="50dp"/>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/gls_red" />
+
 </LinearLayout>
