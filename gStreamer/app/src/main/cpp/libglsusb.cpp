@@ -590,6 +590,14 @@ static void initFuncPointers(JNIEnv *env)
     getMethodLog(gOnFileName,"onFileName");
 }
 
+static int ResetDevice(libusb_device_handle *devh)
+{
+    int status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                               LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"FX3 RST", 7,0);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer ResetDevice=%d",status);
+    return status;
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_gstreamer_MainActivity_stringFromJNI(
         JNIEnv* env,
