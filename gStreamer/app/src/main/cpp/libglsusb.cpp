@@ -595,6 +595,9 @@ Java_com_example_gstreamer_MainActivity_stringFromJNI(
         JNIEnv* env,
         jobject /* this */) {
 
+    const struct libusb_version* libUsbVersion = libusb_get_version();
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb v%d.%d.%d.%d",libUsbVersion->major,libUsbVersion->minor,libUsbVersion->micro,libUsbVersion->nano);
+
     std::string hello = "gStreamer Android v0.2.4";
     return env->NewStringUTF(hello.c_str());
 }
