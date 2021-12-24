@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <string>
 #include <chrono>
+#include <string.h>
 
 #define TAG "glsusb"
 #define BUF_SIZE    (8192*8*4)
@@ -62,6 +63,7 @@ static StopWatch gRcvWatch;
 static size_t gBytes;
 static ByteSec gPrev;
 static Thread gRcv,gSnd;
+static int gZingMode;
 
 static std::string KMG(unsigned int val)
 {
@@ -614,6 +616,13 @@ static void GetZingMode(libusb_device_handle *devh)
                                            LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, buf, 3,100);
     __android_log_print(ANDROID_LOG_INFO,TAG,"ZING MODE=%s",buf);
 
+    if(strncmp((char*)buf,"DEV",3)==0)
+        gZingMode = 0;
+    else if(strncmp((char*)buf,"PPC",3)==0)
+        gZingMode = 1;
+    else
+        assert(0);  //should not reach here
+
     status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
                                            LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE NORMAL", 15,100);
     __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE NORMAL=%d",status);
@@ -791,6 +800,13 @@ Java_com_example_gstreamer_MainActivity_bps
     gPrev.now = stop;
     gPrev.bytes = bytes;
     return bps;
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_example_gstreamer_MainActivity_zingMode
+        (JNIEnv *, jobject)
+{
+    return gZingMode;
 }
 
 extern "C" jint

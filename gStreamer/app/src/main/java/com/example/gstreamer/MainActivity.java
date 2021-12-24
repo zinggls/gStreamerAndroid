@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     public native int writer(Object fileList);
     public native int stopWriter();
     public native int bps();
+    public native int zingMode();
 
     private void createList()
     {
@@ -488,6 +489,11 @@ public class MainActivity extends AppCompatActivity {
                                 btnCon.setText("Connected");
                                 chart.setVisibility(View.VISIBLE);
                                 pgFile.setVisibility(View.INVISIBLE);
+
+                                if(zingMode()==0)
+                                    LI(TAG, "Zing Mode: DEV");
+                                else if(zingMode()==1)
+                                    LI(TAG, "Zing Mode: PPC");
                             }else{
                                 LE(TAG, "Device open failure, error=" + r);
                             }
