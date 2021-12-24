@@ -598,6 +598,27 @@ static int ResetDevice(libusb_device_handle *devh)
     return status;
 }
 
+static void GetZingMode(libusb_device_handle *devh)
+{
+    int status;
+    status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                           LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE SYNC", 13,100);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE SYC=%d",status);
+
+    status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                           LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"GET ZING MODE", 13,100);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE SYC=%d",status);
+
+    unsigned char buf[4]={0,};
+    status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR |
+                                           LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, buf, 3,100);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"ZING MODE=%s",buf);
+
+    status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                           LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE NORMAL", 15,100);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE NORMAL=%d",status);
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_gstreamer_MainActivity_stringFromJNI(
         JNIEnv* env,
@@ -635,6 +656,7 @@ Java_com_example_gstreamer_MainActivity_open
         return r;
     }
 
+    GetZingMode(gDevh);
     r = deviceInfo(gDevh);
     __android_log_print(ANDROID_LOG_INFO,TAG,"deviceInfo = %d",r);
     if(r<0) return r;
