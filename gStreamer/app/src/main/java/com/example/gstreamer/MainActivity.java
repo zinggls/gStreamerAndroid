@@ -494,6 +494,8 @@ public class MainActivity extends AppCompatActivity {
                                     LI(TAG, "Zing Mode: DEV");
                                 else if(zingMode()==1)
                                     LI(TAG, "Zing Mode: PPC");
+                                else
+                                    LI(TAG, "Zing Mode: N/A");
                             }else{
                                 LE(TAG, "Device open failure, error=" + r);
                             }

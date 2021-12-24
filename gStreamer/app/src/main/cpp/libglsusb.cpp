@@ -621,7 +621,7 @@ static void GetZingMode(libusb_device_handle *devh)
     else if(strncmp((char*)buf,"PPC",3)==0)
         gZingMode = 1;
     else
-        assert(0);  //should not reach here
+        gZingMode = -1;
 
     status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
                                            LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE NORMAL", 15,100);
