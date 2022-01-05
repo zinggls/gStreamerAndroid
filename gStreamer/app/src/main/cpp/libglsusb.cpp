@@ -10,6 +10,7 @@
 #include <string>
 #include <chrono>
 #include <string.h>
+#include <unistd.h>
 
 #define TAG "glsusb"
 #define BUF_SIZE    (8192*8*4)
@@ -606,15 +607,18 @@ static void GetZingMode(libusb_device_handle *devh)
     status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
                                            LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE SYNC", 13,100);
     __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE SYC=%d",status);
+    usleep(100000);
 
     status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
                                            LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"GET ZING MODE", 13,100);
     __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE SYC=%d",status);
+    usleep(100000);
 
     unsigned char buf[4]={0,};
     status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR |
                                            LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, buf, 3,100);
     __android_log_print(ANDROID_LOG_INFO,TAG,"ZING MODE=%s",buf);
+    usleep(100000);
 
     if(strncmp((char*)buf,"DEV",3)==0)
         gZingMode = 0;
@@ -626,6 +630,7 @@ static void GetZingMode(libusb_device_handle *devh)
     status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
                                            LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE NORMAL", 15,100);
     __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE NORMAL=%d",status);
+    usleep(100000);
 }
 
 extern "C" JNIEXPORT jstring JNICALL
