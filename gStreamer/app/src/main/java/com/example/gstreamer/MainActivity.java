@@ -496,6 +496,12 @@ public class MainActivity extends AppCompatActivity {
                                     LI(TAG, "Zing Mode: PPC");
                                 else
                                     LI(TAG, "Zing Mode: N/A");
+
+                                if(firmwareVer().length()>0) {
+                                    LI(TAG, "Firmware version: "+firmwareVer());
+                                }else{
+                                    LI(TAG, "Firmware version: N/A");
+                                }
                             }else{
                                 LE(TAG, "Device open failure, error=" + r);
                             }
@@ -566,6 +572,7 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+    public native String firmwareVer();
 
     public void onMessage(String s)
     {

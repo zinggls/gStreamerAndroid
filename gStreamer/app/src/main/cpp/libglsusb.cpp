@@ -65,6 +65,7 @@ static size_t gBytes;
 static ByteSec gPrev;
 static Thread gRcv,gSnd;
 static int gZingMode;
+static std::string gFwVersion;
 
 static std::string KMG(unsigned int val)
 {
@@ -601,6 +602,23 @@ static int ResetDevice(libusb_device_handle *devh)
     return status;
 }
 
+static void GetFirmwareVersion(libusb_device_handle *devh)
+{
+    int status;
+    status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                            +                                           LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"VER", 3,100);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer VER=%d",status);
+    usleep(100000);
+
+    unsigned char buf[6]={0,};
+    status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR |
+                                            +                                           LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, buf, 5,100);
+    usleep(100000);
+
+    gFwVersion = reinterpret_cast<char*>(buf);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"Firmware version=%s",gFwVersion.c_str());
+}
+
 static void GetZingMode(libusb_device_handle *devh)
 {
     int status;
@@ -627,6 +645,7 @@ static void GetZingMode(libusb_device_handle *devh)
     else
         gZingMode = -1;
 
+    GetFirmwareVersion(devh);
     status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
                                            LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE NORMAL", 15,100);
     __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE NORMAL=%d",status);
@@ -812,6 +831,13 @@ Java_com_example_gstreamer_MainActivity_zingMode
         (JNIEnv *, jobject)
 {
     return gZingMode;
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_gstreamer_MainActivity_firmwareVer
+        (JNIEnv *env, jobject)
+{
+    return env->NewStringUTF(gFwVersion.c_str());
 }
 
 extern "C" jint
