@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
     public native int stopWriter();
     public native int bps();
     public native int zingMode();
+    public native void setZingMode(int mode);
 
     private void createList()
     {
@@ -157,18 +158,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void createSpinner()
     {
-        String[] items = {"N/A","DEV","PPC"};
+        String[] items = {"DEV","PPC"};
         spinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(0);
+        spinner.setVisibility(View.INVISIBLE);
 
         // 스피너에서 선택 했을 경우 이벤트 처리
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                setZingMode(position);
                 LI(TAG, items[position]);
             }
 
@@ -517,14 +520,16 @@ public class MainActivity extends AppCompatActivity {
                                 chart.setVisibility(View.VISIBLE);
                                 pgFile.setVisibility(View.INVISIBLE);
 
+                                spinner.setVisibility(View.INVISIBLE);
                                 if(zingMode()==0) {
-                                    spinner.setSelection(1);
+                                    spinner.setVisibility(View.VISIBLE);
+                                    spinner.setSelection(0);
                                     LI(TAG, "Zing Mode: DEV");
                                 }else if(zingMode()==1) {
-                                    spinner.setSelection(2);
+                                    spinner.setVisibility(View.VISIBLE);
+                                    spinner.setSelection(1);
                                     LI(TAG, "Zing Mode: PPC");
                                 }else {
-                                    spinner.setSelection(0);
                                     LI(TAG, "Zing Mode: N/A");
                                 }
 
