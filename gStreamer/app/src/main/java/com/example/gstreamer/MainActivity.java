@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> listAdapter;
     private ProgressBar pgFile;
     private LineChart chart;
+    private Spinner spinner;
 
     public native int open(int fileDescriptor);
     public native void close();
@@ -157,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
     public void createSpinner()
     {
         String[] items = {"N/A","DEV","PPC"};
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        spinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
