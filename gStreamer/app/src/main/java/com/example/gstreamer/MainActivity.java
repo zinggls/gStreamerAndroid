@@ -154,6 +154,28 @@ public class MainActivity extends AppCompatActivity {
         chart.setVisibility(View.INVISIBLE);
     }
 
+    public void createSpinner()
+    {
+        String[] items = {"DEV","PPC"};
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+
+        // 스피너에서 선택 했을 경우 이벤트 처리
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                LI(TAG, items[position]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+    }
+
     private LineDataSet createSet()
     {
         LineDataSet set = new LineDataSet(null,"bps");
@@ -389,25 +411,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         isStoragePermissionGranted();
-
-        String[] items = {"DEV","PPC"};
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-
-        // 스피너에서 선택 했을 경우 이벤트 처리
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                LI(TAG, items[position]);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
+        createSpinner();
     }
 
     @Override
