@@ -865,11 +865,15 @@ Java_com_example_gstreamer_MainActivity_firmwareVer
     return env->NewStringUTF(gFwVersion.c_str());
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jint JNICALL
 Java_com_example_gstreamer_MainActivity_setZingMode
         (JNIEnv *env, jobject thiz, jint mode)
 {
-    if(gDevh) SetZingMode(gDevh,mode);
+    if(gDevh) {
+        SetZingMode(gDevh,mode);
+        return 0;
+    }
+    return -1;
 }
 
 extern "C" jint

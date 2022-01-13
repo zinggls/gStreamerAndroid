@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     public native int stopWriter();
     public native int bps();
     public native int zingMode();
-    public native void setZingMode(int mode);
+    public native int setZingMode(int mode);
 
     private void createList()
     {
@@ -171,8 +171,8 @@ public class MainActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                setZingMode(position);
-                LI(TAG, items[position]);
+                if(setZingMode(position)==0)
+                    LI(TAG, "Zing Mode: "+items[position]);
             }
 
             @Override
