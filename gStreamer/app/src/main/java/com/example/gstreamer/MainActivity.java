@@ -156,12 +156,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void createSpinner()
     {
-        String[] items = {"DEV","PPC"};
+        String[] items = {"N/A","DEV","PPC"};
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+        spinner.setSelection(0);
 
         // 스피너에서 선택 했을 경우 이벤트 처리
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
