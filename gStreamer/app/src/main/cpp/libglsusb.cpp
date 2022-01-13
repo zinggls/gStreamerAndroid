@@ -869,7 +869,7 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_example_gstreamer_MainActivity_setZingMode
         (JNIEnv *env, jobject thiz, jint mode)
 {
-    SetZingMode(gDevh,mode);
+    if(gDevh) SetZingMode(gDevh,mode);
 }
 
 extern "C" jint
