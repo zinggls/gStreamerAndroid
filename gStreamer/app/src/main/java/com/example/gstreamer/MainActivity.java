@@ -329,12 +329,14 @@ public class MainActivity extends AppCompatActivity {
                 if(receiveBtn){
                     btnSnd.setEnabled(true);
                     btnRcv.setText("Recv");
+                    spinner.setEnabled(true);
                     chart.setVisibility(View.VISIBLE);
                     stopReader();
                     LI(TAG, "Reader stopped");
                 }else{
                     btnSnd.setEnabled(false);
                     btnRcv.setText("StopRecv");
+                    spinner.setEnabled(false);
                     chart.setVisibility(View.VISIBLE);
                     if((r=reader())==0) {
                         LI(TAG, "Reader starts successfully");
@@ -355,6 +357,7 @@ public class MainActivity extends AppCompatActivity {
                     btnSnd.setEnabled(true);
                     btnRcv.setEnabled(true);
                     btnSnd.setText("Send");
+                    spinner.setEnabled(true);
                     LI(TAG, "Writer stopped");
                     selfSndBtn = !selfSndBtn;
                     return;
@@ -362,6 +365,7 @@ public class MainActivity extends AppCompatActivity {
                 btnCon.setEnabled(false);
                 btnSnd.setEnabled(false);
                 btnRcv.setEnabled(false);
+                spinner.setEnabled(false);
                 btnSnd.setText("Sending");
                 LI(TAG, "Send button clicked");
 
