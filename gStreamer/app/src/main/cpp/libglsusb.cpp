@@ -652,6 +652,31 @@ static void GetZingMode(libusb_device_handle *devh)
     usleep(100000);
 }
 
+static void SetZingMode(libusb_device_handle *devh, int mode)
+{
+    int status;
+    status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                           LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE SYNC", 13,100);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE SYC=%d",status);
+    usleep(100000);
+
+    if(mode==0) {
+        status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                               LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"ZING MODE DEV", 13,100);
+        __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer ZING MODE DEV=%d",status);
+    }else if(mode==1) {
+        status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                               LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"ZING MODE PPC", 13,100);
+        __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer ZING MODE PPC=%d",status);
+    }
+    usleep(100000);
+
+    status = libusb_control_transfer(devh, LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR |
+                                           LIBUSB_RECIPIENT_DEVICE, 0x3, 0, 0, (unsigned char*)"DMA MODE NORMAL", 15,100);
+    __android_log_print(ANDROID_LOG_INFO,TAG,"libusb_control_transfer DMA MODE NORMAL=%d",status);
+    usleep(100000);
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_gstreamer_MainActivity_stringFromJNI(
         JNIEnv* env,
@@ -838,6 +863,13 @@ Java_com_example_gstreamer_MainActivity_firmwareVer
         (JNIEnv *env, jobject)
 {
     return env->NewStringUTF(gFwVersion.c_str());
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_gstreamer_MainActivity_setZingMode
+        (JNIEnv *env, jobject thiz, jint mode)
+{
+    SetZingMode(gDevh,mode);
 }
 
 extern "C" jint
