@@ -517,12 +517,16 @@ public class MainActivity extends AppCompatActivity {
                                 chart.setVisibility(View.VISIBLE);
                                 pgFile.setVisibility(View.INVISIBLE);
 
-                                if(zingMode()==0)
+                                if(zingMode()==0) {
+                                    spinner.setSelection(1);
                                     LI(TAG, "Zing Mode: DEV");
-                                else if(zingMode()==1)
+                                }else if(zingMode()==1) {
+                                    spinner.setSelection(2);
                                     LI(TAG, "Zing Mode: PPC");
-                                else
+                                }else {
+                                    spinner.setSelection(0);
                                     LI(TAG, "Zing Mode: N/A");
+                                }
 
                                 if(firmwareVer().length()>0) {
                                     LI(TAG, "Firmware version: "+firmwareVer());
